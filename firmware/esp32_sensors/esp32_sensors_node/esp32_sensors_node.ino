@@ -178,6 +178,7 @@ void writeSi1145Register(byte reg, byte value) {
 }
 
 void forceSunlightMeasurement() {
+  writeSi1145Register(SI1145_IRQ_STATUS_REG, 0xFF);
   writeSi1145Register(SI1145_COMMAND_REG, SI1145_COMMAND_PSALS_FORCE);
   delay(100);
 }
@@ -358,11 +359,27 @@ SensorReadings readSensors() {
   }
 
   if (sunlightReady) {
-    forceSunlightMeasurement();
-    readings.visibleLight = readSi1145HalfWord(SI1145_ALS_VIS_DATA0_REG);
-    readings.infraredLight = readSi1145HalfWord(SI1145_ALS_IR_DATA0_REG);
-    readings.uvIndex = readSi1145HalfWord(SI1145_UVINDEX0_REG) / 100.0;
-    readings.sunlightOk = true;
+    for (int attempt = 1; attempt <= 3; attempt++) {
+      forceSunlightMeasurement();
+      readings.visibleLight = readSi1145HalfWord(SI1145_ALS_VIS_DATA0_REG);
+      readings.infraredLight = readSi1145HalfWord(SI1145_ALS_IR_DATA0_REG);
+      readings.uvIndex = readSi1145HalfWord(SI1145_UVINDEX0_REG) / 100.0;
+      readings.sunlightOk = true;
+
+      if (readings.visibleLight != 0 || readings.infraredLight != 0 || readings.uvIndex != 0.0) {
+        break;
+      }
+
+      Serial.print("Sunlight read attempt ");
+      Serial.print(attempt);
+      Serial.println(" returned zeros.");
+
+      if (attempt == 2) {
+        Serial.println("Reinitializing Grove Sunlight / SI1145...");
+        sunlightReady = sunlight.Begin();
+        delay(100);
+      }
+    }
   }
 
   return readings;
@@ -477,11 +494,11 @@ void setup() {
   Serial.println();
   Serial.println("Starting BeeBridge ESP32 Sensor Node...");
 
-  connectToWiFi();
-  signInToFirebase();
   Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
   scanI2C();
   startSensors();
+  connectToWiFi();
+  signInToFirebase();
 }
 
 void loop() {
