@@ -2,13 +2,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getDatabase, onValue, ref } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
-    apiKey: "PASTE_FIREBASE_API_KEY_HERE",
-    authDomain: "PASTE_PROJECT_ID.firebaseapp.com",
+    apiKey: "AIzaSyCY5z0-aa7mPZg5ViT-6G6HoVkbjXhHEhs",
+    authDomain: "beebridge-fbf07.firebaseapp.com",
     databaseURL: "https://PASTE_DATABASE_NAME.firebaseio.com",
-    projectId: "PASTE_PROJECT_ID",
-    storageBucket: "PASTE_PROJECT_ID.appspot.com",
-    messagingSenderId: "PASTE_SENDER_ID",
-    appId: "PASTE_APP_ID"
+    projectId: "beebridge-fbf07",
+    storageBucket: "beebridge-fbf07.firebasestorage.app",
+    messagingSenderId: "63521687188",
+    appId: "1:63521687188:web:284d8dd08231a66f2e9681",
+    measurementId: "G-EYMW4SS6W1"
 };
 
 const DATABASE_PATH = "beebridge/station";
