@@ -15,6 +15,19 @@
   - Adafruit SHT31 Library
   - Grove Sunlight Sensor / SI114X Library
   - Adafruit BusIO
+
+  Firebase:
+  - Enable Authentication -> Email/Password
+  - Create one user for the ESP32 sensor node
+  - Realtime Database rules can use:
+    {
+      "rules": {
+        "beebridge": {
+          ".read": true,
+          ".write": "auth != null"
+        }
+      }
+    }
 */
 
 #include <HTTPClient.h>
@@ -27,12 +40,17 @@
 const char* WIFI_SSID = "YOUR_WIFI_NAME";
 const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
 
+const char* FIREBASE_API_KEY = "AIzaSyCY5z0-aa7mPZg5ViT-6G6HoVkbjXhHEhs";
+const char* FIREBASE_USER_EMAIL = "esp32-sensor@beebridge.local";
+const char* FIREBASE_USER_PASSWORD = "YOUR_FIREBASE_USER_PASSWORD";
 const char* FIREBASE_DATABASE_URL = "https://beebridge-fbf07-default-rtdb.europe-west1.firebasedatabase.app";
 const char* FIREBASE_ENVIRONMENT_PATH = "/beebridge/station/environment.json";
 
 const int I2C_SDA_PIN = 21;
 const int I2C_SCL_PIN = 22;
 const unsigned long READ_INTERVAL_MS = 5000;
+const unsigned long TOKEN_REFRESH_MARGIN_MS = 5UL * 60UL * 1000UL;
+
 const byte SI1145_I2C_ADDRESS = 0x60;
 const byte SI1145_PART_ID_REG = 0x00;
 const byte SI1145_REV_ID_REG = 0x01;
@@ -49,6 +67,8 @@ SI114X sunlight = SI114X();
 bool sht31Ready = false;
 bool sunlightReady = false;
 unsigned long lastReadMs = 0;
+unsigned long firebaseTokenExpiresAtMs = 0;
+String firebaseIdToken = "";
 
 struct SensorReadings {
   float temperatureC;
@@ -59,6 +79,40 @@ struct SensorReadings {
   bool temperatureHumidityOk;
   bool sunlightOk;
 };
+
+String jsonEscape(const String& value) {
+  String escaped = "";
+
+  for (unsigned int i = 0; i < value.length(); i++) {
+    char c = value.charAt(i);
+
+    if (c == '"' || c == '\\') {
+      escaped += '\\';
+    }
+
+    escaped += c;
+  }
+
+  return escaped;
+}
+
+String extractJsonString(const String& json, const String& key) {
+  String marker = "\"" + key + "\":\"";
+  int start = json.indexOf(marker);
+
+  if (start < 0) {
+    return "";
+  }
+
+  start += marker.length();
+  int end = json.indexOf("\"", start);
+
+  if (end < 0) {
+    return "";
+  }
+
+  return json.substring(start, end);
+}
 
 byte readSi1145Register(byte reg) {
   Wire.beginTransmission(SI1145_I2C_ADDRESS);
@@ -123,6 +177,80 @@ void connectToWiFi() {
   Serial.println(WiFi.localIP());
 }
 
+void ensureWiFiConnected() {
+  if (WiFi.status() != WL_CONNECTED) {
+    connectToWiFi();
+  }
+}
+
+bool signInToFirebase() {
+  ensureWiFiConnected();
+
+  WiFiClientSecure client;
+  client.setInsecure();
+
+  HTTPClient http;
+  String url = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=";
+  url += FIREBASE_API_KEY;
+
+  String payload = "{";
+  payload += "\"email\":\"";
+  payload += jsonEscape(String(FIREBASE_USER_EMAIL));
+  payload += "\",\"password\":\"";
+  payload += jsonEscape(String(FIREBASE_USER_PASSWORD));
+  payload += "\",\"returnSecureToken\":true";
+  payload += "}";
+
+  Serial.print("Signing in to Firebase Auth... ");
+
+  if (!http.begin(client, url)) {
+    Serial.println("HTTP begin failed.");
+    return false;
+  }
+
+  http.addHeader("Content-Type", "application/json");
+  int statusCode = http.POST(payload);
+  String response = http.getString();
+  http.end();
+
+  Serial.print("HTTP ");
+  Serial.println(statusCode);
+
+  if (statusCode != 200) {
+    Serial.print("Auth response: ");
+    Serial.println(response);
+    firebaseIdToken = "";
+    firebaseTokenExpiresAtMs = 0;
+    return false;
+  }
+
+  firebaseIdToken = extractJsonString(response, "idToken");
+  String expiresIn = extractJsonString(response, "expiresIn");
+
+  if (firebaseIdToken.length() == 0) {
+    Serial.println("Could not parse Firebase idToken.");
+    firebaseTokenExpiresAtMs = 0;
+    return false;
+  }
+
+  unsigned long expiresInSeconds = expiresIn.length() > 0 ? expiresIn.toInt() : 3600;
+  firebaseTokenExpiresAtMs = millis() + (expiresInSeconds * 1000UL);
+
+  Serial.println("Firebase Auth ready.");
+  return true;
+}
+
+bool ensureFirebaseToken() {
+  bool hasToken = firebaseIdToken.length() > 0;
+  bool tokenFresh = hasToken && millis() + TOKEN_REFRESH_MARGIN_MS < firebaseTokenExpiresAtMs;
+
+  if (tokenFresh) {
+    return true;
+  }
+
+  return signInToFirebase();
+}
+
 void scanI2C() {
   Serial.println("Scanning I2C bus...");
 
@@ -151,7 +279,6 @@ void startSensors() {
   sht31Ready = sht31.begin(0x44);
 
   if (!sht31Ready) {
-    // Some SHT31-D boards use address 0x45.
     sht31Ready = sht31.begin(0x45);
   }
 
@@ -221,37 +348,49 @@ String firebaseJsonForEnvironment(const SensorReadings& readings) {
   return json;
 }
 
-void uploadEnvironmentToFirebase(const SensorReadings& readings) {
-  if (WiFi.status() != WL_CONNECTED) {
-    connectToWiFi();
+bool uploadEnvironmentToFirebase(const SensorReadings& readings) {
+  ensureWiFiConnected();
+
+  if (!ensureFirebaseToken()) {
+    Serial.println("Firebase upload skipped: no auth token.");
+    return false;
   }
 
   WiFiClientSecure client;
   client.setInsecure();
 
   HTTPClient http;
-  String url = String(FIREBASE_DATABASE_URL) + FIREBASE_ENVIRONMENT_PATH;
+  String url = String(FIREBASE_DATABASE_URL) + FIREBASE_ENVIRONMENT_PATH + "?auth=" + firebaseIdToken;
   String payload = firebaseJsonForEnvironment(readings);
 
   Serial.print("Uploading environment data to Firebase... ");
 
   if (!http.begin(client, url)) {
     Serial.println("HTTP begin failed.");
-    return;
+    return false;
   }
 
   http.addHeader("Content-Type", "application/json");
   int statusCode = http.PUT(payload);
+  String response = http.getString();
+  http.end();
 
   Serial.print("HTTP ");
   Serial.println(statusCode);
 
-  if (statusCode <= 0 || statusCode >= 400) {
-    Serial.print("Firebase response: ");
-    Serial.println(http.getString());
+  if (statusCode == 401 || statusCode == 403) {
+    firebaseIdToken = "";
+    firebaseTokenExpiresAtMs = 0;
+    Serial.println("Firebase token rejected. Re-authenticating next upload.");
   }
 
-  http.end();
+  if (statusCode <= 0 || statusCode >= 400) {
+    Serial.print("Firebase response: ");
+    Serial.println(response);
+    return false;
+  }
+
+  return true;
 }
 
 void printSensorReadings(const SensorReadings& readings) {
@@ -296,6 +435,7 @@ void setup() {
   Serial.println("Starting BeeBridge ESP32 Sensor Node...");
 
   connectToWiFi();
+  signInToFirebase();
   Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
   scanI2C();
   startSensors();
