@@ -45,6 +45,10 @@ const cameraHostInput = document.getElementById("cameraHost");
 const cameraStatus = document.getElementById("cameraStatus");
 const connectCameraButton = document.getElementById("connectCamera");
 const resetCameraButton = document.getElementById("resetCamera");
+const cameraControls = document.querySelector(".camera-controls");
+const cameraSummary = document.getElementById("cameraSummary");
+const cameraAddress = document.getElementById("cameraAddress");
+const changeCameraButton = document.getElementById("changeCamera");
 
 let cameraHost = localStorage.getItem(CAMERA_STORAGE_KEY) || "";
 
@@ -67,6 +71,32 @@ function setCameraStatus(label, isOffline = false) {
     cameraStatus.classList.toggle("offline", isOffline);
 }
 
+function showCameraControls() {
+    if (cameraControls) {
+        cameraControls.hidden = false;
+    }
+
+    if (cameraSummary) {
+        cameraSummary.hidden = true;
+    }
+}
+
+function showCameraSummary() {
+    if (!cameraHost) return;
+
+    if (cameraAddress) {
+        cameraAddress.textContent = cameraHost;
+    }
+
+    if (cameraControls) {
+        cameraControls.hidden = true;
+    }
+
+    if (cameraSummary) {
+        cameraSummary.hidden = false;
+    }
+}
+
 function showDemoCamera() {
     cameraHost = "";
     localStorage.removeItem(CAMERA_STORAGE_KEY);
@@ -77,6 +107,7 @@ function showDemoCamera() {
 
     cameraFeed.src = CAMERA_PLACEHOLDER;
     setCameraStatus("Demo");
+    showCameraControls();
 }
 
 function refreshCameraFrame() {
@@ -87,14 +118,25 @@ function refreshCameraFrame() {
     }
 
     cameraFeed.src = cameraCaptureUrl();
-    setCameraStatus("Live");
+
+    if (!cameraSummary || cameraSummary.hidden) {
+        setCameraStatus("Connecting");
+    }
 }
+
+cameraFeed.addEventListener("load", () => {
+    if (!cameraHost || cameraFeed.src.includes(CAMERA_PLACEHOLDER)) return;
+
+    setCameraStatus("Live");
+    showCameraSummary();
+});
 
 cameraFeed.addEventListener("error", () => {
     if (!cameraHost) return;
 
     cameraFeed.src = CAMERA_PLACEHOLDER;
     setCameraStatus("Offline", true);
+    showCameraControls();
 });
 
 connectCameraButton.addEventListener("click", () => {
@@ -112,6 +154,14 @@ connectCameraButton.addEventListener("click", () => {
 });
 
 resetCameraButton.addEventListener("click", showDemoCamera);
+
+changeCameraButton.addEventListener("click", () => {
+    if (cameraHostInput) {
+        cameraHostInput.value = cameraHost;
+    }
+
+    showCameraControls();
+});
 
 cameraHostInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
