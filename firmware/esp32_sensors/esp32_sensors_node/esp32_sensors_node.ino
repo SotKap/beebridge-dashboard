@@ -17,9 +17,18 @@
   - Adafruit BusIO
 */
 
+#include <HTTPClient.h>
+#include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <Wire.h>
 #include "Adafruit_SHT31.h"
 #include "SI114X.h"
+
+const char* WIFI_SSID = "YOUR_WIFI_NAME";
+const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
+
+const char* FIREBASE_DATABASE_URL = "https://beebridge-fbf07-default-rtdb.europe-west1.firebasedatabase.app";
+const char* FIREBASE_ENVIRONMENT_PATH = "/beebridge/station/environment.json";
 
 const int I2C_SDA_PIN = 21;
 const int I2C_SCL_PIN = 22;
@@ -31,9 +40,6 @@ const byte SI1145_SEQ_ID_REG = 0x02;
 const byte SI1145_IRQ_STATUS_REG = 0x21;
 const byte SI1145_RESPONSE_REG = 0x20;
 const byte SI1145_CHIP_STAT_REG = 0x30;
-const byte SI1145_ALS_VIS_DATA0_REG = 0x22;
-const byte SI1145_ALS_IR_DATA0_REG = 0x24;
-const byte SI1145_UVINDEX0_REG = 0x2C;
 const byte SI1145_COMMAND_REG = 0x18;
 const byte SI1145_COMMAND_PSALS_FORCE = 0x07;
 
@@ -44,6 +50,16 @@ bool sht31Ready = false;
 bool sunlightReady = false;
 unsigned long lastReadMs = 0;
 
+struct SensorReadings {
+  float temperatureC;
+  float humidityPercent;
+  uint16_t visibleLight;
+  uint16_t infraredLight;
+  float uvIndex;
+  bool temperatureHumidityOk;
+  bool sunlightOk;
+};
+
 byte readSi1145Register(byte reg) {
   Wire.beginTransmission(SI1145_I2C_ADDRESS);
   Wire.write(reg);
@@ -52,21 +68,6 @@ byte readSi1145Register(byte reg) {
 
   if (Wire.available()) {
     return Wire.read();
-  }
-
-  return 0;
-}
-
-uint16_t readSi1145HalfWord(byte reg) {
-  Wire.beginTransmission(SI1145_I2C_ADDRESS);
-  Wire.write(reg);
-  Wire.endTransmission();
-  Wire.requestFrom(SI1145_I2C_ADDRESS, (byte)2);
-
-  if (Wire.available() >= 2) {
-    uint16_t lowByte = Wire.read();
-    uint16_t highByte = Wire.read();
-    return lowByte | (highByte << 8);
   }
 
   return 0;
@@ -102,6 +103,24 @@ void printSunlightDebug() {
 
   Serial.print("SI1145 CHIP_STAT: 0x");
   Serial.println(readSi1145Register(SI1145_CHIP_STAT_REG), HEX);
+}
+
+void connectToWiFi() {
+  Serial.print("Connecting to WiFi: ");
+  Serial.println(WIFI_SSID);
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println();
+  Serial.println("WiFi connected!");
+  Serial.print("ESP32 sensor node IP address: ");
+  Serial.println(WiFi.localIP());
 }
 
 void scanI2C() {
@@ -152,64 +171,120 @@ void startSensors() {
   }
 }
 
-void printSensorReadings() {
-  Serial.println();
-  Serial.println("BeeBridge sensor readings");
+SensorReadings readSensors() {
+  SensorReadings readings = {};
+  readings.temperatureC = NAN;
+  readings.humidityPercent = NAN;
+  readings.visibleLight = 0;
+  readings.infraredLight = 0;
+  readings.uvIndex = 0.0;
+  readings.temperatureHumidityOk = false;
+  readings.sunlightOk = false;
 
   if (sht31Ready) {
-    float temperature = sht31.readTemperature();
-    float humidity = sht31.readHumidity();
-
-    if (!isnan(temperature) && !isnan(humidity)) {
-      Serial.print("Temperature: ");
-      Serial.print(temperature, 1);
-      Serial.println(" C");
-
-      Serial.print("Humidity: ");
-      Serial.print(humidity, 1);
-      Serial.println(" %");
-    } else {
-      Serial.println("SHT31-D read failed.");
-    }
+    readings.temperatureC = sht31.readTemperature();
+    readings.humidityPercent = sht31.readHumidity();
+    readings.temperatureHumidityOk = !isnan(readings.temperatureC) && !isnan(readings.humidityPercent);
   }
 
   if (sunlightReady) {
     forceSunlightMeasurement();
+    readings.visibleLight = sunlight.ReadVisible();
+    readings.infraredLight = sunlight.ReadIR();
+    readings.uvIndex = sunlight.ReadUV() / 100.0;
+    readings.sunlightOk = true;
+  }
 
-    uint16_t visible = sunlight.ReadVisible();
-    uint16_t infrared = sunlight.ReadIR();
-    float uvIndex = sunlight.ReadUV() / 100.0;
-    uint16_t rawVisible = readSi1145HalfWord(SI1145_ALS_VIS_DATA0_REG);
-    uint16_t rawInfrared = readSi1145HalfWord(SI1145_ALS_IR_DATA0_REG);
-    uint16_t rawUv = readSi1145HalfWord(SI1145_UVINDEX0_REG);
+  return readings;
+}
 
+String firebaseJsonForEnvironment(const SensorReadings& readings) {
+  String json = "{";
+  json += "\"temperatureC\":";
+  json += readings.temperatureHumidityOk ? String(readings.temperatureC, 1) : String("null");
+  json += ",\"humidityPercent\":";
+  json += readings.temperatureHumidityOk ? String(readings.humidityPercent, 1) : String("null");
+  json += ",\"lightLux\":";
+  json += readings.sunlightOk ? String(readings.visibleLight) : String("null");
+  json += ",\"visibleLight\":";
+  json += readings.sunlightOk ? String(readings.visibleLight) : String("null");
+  json += ",\"infraredLight\":";
+  json += readings.sunlightOk ? String(readings.infraredLight) : String("null");
+  json += ",\"uvIndex\":";
+  json += readings.sunlightOk ? String(readings.uvIndex, 2) : String("null");
+  json += ",\"soilMoisturePercent\":42";
+  json += ",\"airQuality\":\"GOOD\"";
+  json += ",\"lastUpdatedMs\":";
+  json += String(millis());
+  json += "}";
+
+  return json;
+}
+
+void uploadEnvironmentToFirebase(const SensorReadings& readings) {
+  if (WiFi.status() != WL_CONNECTED) {
+    connectToWiFi();
+  }
+
+  WiFiClientSecure client;
+  client.setInsecure();
+
+  HTTPClient http;
+  String url = String(FIREBASE_DATABASE_URL) + FIREBASE_ENVIRONMENT_PATH;
+  String payload = firebaseJsonForEnvironment(readings);
+
+  Serial.print("Uploading environment data to Firebase... ");
+
+  if (!http.begin(client, url)) {
+    Serial.println("HTTP begin failed.");
+    return;
+  }
+
+  http.addHeader("Content-Type", "application/json");
+  int statusCode = http.PUT(payload);
+
+  Serial.print("HTTP ");
+  Serial.println(statusCode);
+
+  if (statusCode <= 0 || statusCode >= 400) {
+    Serial.print("Firebase response: ");
+    Serial.println(http.getString());
+  }
+
+  http.end();
+}
+
+void printSensorReadings(const SensorReadings& readings) {
+  Serial.println();
+  Serial.println("BeeBridge sensor readings");
+
+  if (readings.temperatureHumidityOk) {
+    Serial.print("Temperature: ");
+    Serial.print(readings.temperatureC, 1);
+    Serial.println(" C");
+
+    Serial.print("Humidity: ");
+    Serial.print(readings.humidityPercent, 1);
+    Serial.println(" %");
+  } else {
+    Serial.println("SHT31-D read failed.");
+  }
+
+  if (readings.sunlightOk) {
     Serial.print("Visible light: ");
-    Serial.println(visible);
+    Serial.println(readings.visibleLight);
 
     Serial.print("Infrared light: ");
-    Serial.println(infrared);
+    Serial.println(readings.infraredLight);
 
     Serial.print("UV index: ");
-    Serial.println(uvIndex, 2);
+    Serial.println(readings.uvIndex, 2);
 
-    Serial.print("Raw visible register: ");
-    Serial.println(rawVisible);
-
-    Serial.print("Raw infrared register: ");
-    Serial.println(rawInfrared);
-
-    Serial.print("Raw UV register: ");
-    Serial.println(rawUv);
-
-    Serial.print("Measurement IRQ_STATUS: 0x");
-    Serial.println(readSi1145Register(SI1145_IRQ_STATUS_REG), HEX);
-
-    Serial.print("Measurement RESPONSE: 0x");
-    Serial.println(readSi1145Register(SI1145_RESPONSE_REG), HEX);
-
-    if (visible == 0 && infrared == 0 && uvIndex == 0.0) {
+    if (readings.visibleLight == 0 && readings.infraredLight == 0 && readings.uvIndex == 0.0) {
       Serial.println("Sunlight sensor returned all zeros. Try direct light and check that I2C address 0x60 appears in the scan.");
     }
+  } else {
+    Serial.println("Grove Sunlight / SI1145 read skipped.");
   }
 }
 
@@ -220,6 +295,7 @@ void setup() {
   Serial.println();
   Serial.println("Starting BeeBridge ESP32 Sensor Node...");
 
+  connectToWiFi();
   Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
   scanI2C();
   startSensors();
@@ -230,6 +306,8 @@ void loop() {
 
   if (now - lastReadMs >= READ_INTERVAL_MS) {
     lastReadMs = now;
-    printSensorReadings();
+    SensorReadings readings = readSensors();
+    printSensorReadings(readings);
+    uploadEnvironmentToFirebase(readings);
   }
 }
