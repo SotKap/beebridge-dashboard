@@ -107,6 +107,9 @@ body {
 main {
     width: min(1180px, calc(100% - 32px));
     margin: 28px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
 }
 
 .card {
@@ -121,7 +124,6 @@ main {
     display: grid;
     grid-template-columns: 1.35fr 0.9fr;
     gap: 22px;
-    margin-bottom: 22px;
 }
 
 .section-title {
@@ -193,7 +195,7 @@ main {
 .environment-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 14px;
+    gap: 16px;
 }
 
 .stat-card,
@@ -244,7 +246,6 @@ main {
     display: grid;
     grid-template-columns: 0.7fr 0.8fr 1.3fr;
     gap: 22px;
-    margin-top: 22px;
 }
 
 .bottom-grid p {
