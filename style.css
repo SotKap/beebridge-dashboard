@@ -372,20 +372,16 @@ main {
 .power-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 18px;
-}
-
-.power-row .power-value {
-    font-size: 58px;
-    line-height: 1;
+    justify-content: flex-start;
+    gap: 14px;
 }
 
 .power-icon {
-    width: 62px;
-    height: 62px;
+    width: 58px;
+    height: 58px;
     object-fit: contain;
     flex: 0 0 auto;
+    transform: rotate(90deg);
 }
 
 .bottom-nav {
@@ -471,12 +467,8 @@ main {
         font-size: 28px;
     }
 
-    .power-row .power-value {
-        font-size: 48px;
-    }
-
     .power-icon {
-        width: 54px;
-        height: 54px;
+        width: 50px;
+        height: 50px;
     }
 }
