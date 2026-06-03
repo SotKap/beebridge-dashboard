@@ -1,1 +1,268 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>BeeBridge Dashboard</title>
+
+<link rel="stylesheet" href="style.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+<body>
+
+<header class="topbar">
+
+    <div class="menu-btn">
+        ☰
+    </div>
+
+    <div class="logo-section">
+
+        <img src="assets/logo.png" class="logo">
+
+        <div>
+            <h1>BeeBridge</h1>
+            <span>Pollinator Monitoring Station</span>
+        </div>
+
+    </div>
+
+    <div class="connection-status">
+
+        <span class="wifi-icon">📶</span>
+
+        <span>Connected</span>
+
+        <span class="status-dot"></span>
+
+    </div>
+
+</header>
+
+
+<main>
+
+<div class="top-grid">
+
+    <section class="card live-card">
+
+        <div class="section-title">
+
+            <span class="green-dot"></span>
+
+            LIVE VIEW
+
+        </div>
+
+        <img
+            id="cameraFeed"
+            src="https://placehold.co/800x600"
+            class="camera-feed">
+
+    </section>
+
+
+    <section class="card ai-card">
+
+        <div class="section-title">
+
+            🧠 AI RECOGNITION
+
+        </div>
+
+        <div class="detection-box">
+
+            <h2>POLLINATOR DETECTED</h2>
+
+            <p>
+                Class:
+                <span id="className">Bee</span>
+            </p>
+
+            <p>
+                Confidence:
+                <span id="confidence">86%</span>
+            </p>
+
+        </div>
+
+        <canvas id="confidenceChart"></canvas>
+
+        <div class="visit-info">
+
+            <p>Last visit: 10:42:26</p>
+
+            <p>Auto count: ✓</p>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<section class="card">
+
+    <div class="section-title">
+
+        📊 VISITS TODAY
+
+    </div>
+
+    <div class="visits-grid">
+
+        <div class="stat-card">
+            <img src="assets/bee-icon.svg" class="stat-icon">
+            <h3>Pollinators</h3>
+            <div class="big-number">12</div>
+        </div>
+
+        <div class="stat-card">
+            <img src="assets/bee-icon.svg" class="stat-icon">
+            <h3>Bees</h3>
+            <div class="big-number">8</div>
+        </div>
+
+        <div class="stat-card">
+            <img src="assets/butterfly.svg" class="stat-icon">
+            <h3>Butterflies</h3>
+            <div class="big-number">3</div>
+        </div>
+
+        <div class="stat-card">
+            <img src="assets/insect.svg" class="stat-icon">
+            <h3>Other Insects</h3>
+            <div class="big-number">1</div>
+        </div>
+
+        <div class="stat-card">
+            <img src="assets/empty.svg" class="stat-icon">
+            <h3>Empty</h3>
+            <div class="big-number">27</div>
+        </div>
+
+    </div>
+
+</section>
+
+
+<section class="card">
+
+    <div class="section-title">
+
+        🌿 ENVIRONMENT
+
+    </div>
+
+    <div class="environment-grid">
+
+        <div class="env-card">
+            <img src="assets/temp.svg">
+            <h3>Temperature</h3>
+            <div class="sensor-value">25.1°C</div>
+        </div>
+
+        <div class="env-card">
+            <img src="assets/humidity.svg">
+            <h3>Humidity</h3>
+            <div class="sensor-value">48%</div>
+        </div>
+
+        <div class="env-card">
+            <img src="assets/light.svg">
+            <h3>Light</h3>
+            <div class="sensor-value">720 lux</div>
+        </div>
+
+        <div class="env-card">
+            <img src="assets/soil.svg">
+            <h3>Soil Moisture</h3>
+            <div class="sensor-value">42%</div>
+        </div>
+
+        <div class="env-card">
+            <img src="assets/air.svg">
+            <h3>Air Quality</h3>
+            <div class="sensor-value">GOOD</div>
+        </div>
+
+    </div>
+
+</section>
+
+
+<div class="bottom-grid">
+
+    <section class="card">
+
+        <div class="section-title">
+            ⚡ POWER
+        </div>
+
+        <div class="power-value">
+            76%
+        </div>
+
+    </section>
+
+
+    <section class="card">
+
+        <div class="section-title">
+            🏅 BEEBRIDGE SCORE
+        </div>
+
+        <div class="score">
+            82 / 100
+        </div>
+
+    </section>
+
+
+    <section class="card">
+
+        <div class="section-title">
+            💡 RECOMMENDATION
+        </div>
+
+        <p>
+            Soil is getting dry. Water plants this afternoon.
+        </p>
+
+    </section>
+
+</div>
+
+</main>
+
+
+<nav class="bottom-nav">
+
+    <div class="nav-item active">
+        Home
+    </div>
+
+    <div class="nav-item">
+        History
+    </div>
+
+    <div class="nav-item">
+        Analytics
+    </div>
+
+    <div class="nav-item">
+        Settings
+    </div>
+
+</nav>
+
+<script src="app.js"></script>
+
+</body>
+</html>
