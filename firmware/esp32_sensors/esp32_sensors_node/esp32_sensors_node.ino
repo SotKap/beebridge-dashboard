@@ -1,0 +1,138 @@
+/*
+  BeeBridge ESP32 DevKit V1 Sensor Node
+
+  Sensors:
+  - Adafruit SHT31-D: temperature + humidity
+  - Grove Sunlight Sensor v1.0 / SI1145: visible light + IR + UV index
+
+  Wiring for ESP32 DevKit V1:
+  - 3V3 -> sensor VCC
+  - GND -> sensor GND
+  - GPIO21 -> SDA
+  - GPIO22 -> SCL
+
+  Arduino libraries needed:
+  - Adafruit SHT31 Library
+  - Adafruit SI1145 Library
+  - Adafruit BusIO
+*/
+
+#include <Wire.h>
+#include "Adafruit_SHT31.h"
+#include "Adafruit_SI1145.h"
+
+const int I2C_SDA_PIN = 21;
+const int I2C_SCL_PIN = 22;
+const unsigned long READ_INTERVAL_MS = 5000;
+
+Adafruit_SHT31 sht31 = Adafruit_SHT31();
+Adafruit_SI1145 sunlight = Adafruit_SI1145();
+
+bool sht31Ready = false;
+bool sunlightReady = false;
+unsigned long lastReadMs = 0;
+
+void scanI2C() {
+  Serial.println("Scanning I2C bus...");
+
+  byte deviceCount = 0;
+
+  for (byte address = 1; address < 127; address++) {
+    Wire.beginTransmission(address);
+    byte error = Wire.endTransmission();
+
+    if (error == 0) {
+      Serial.print("I2C device found at 0x");
+      if (address < 16) {
+        Serial.print("0");
+      }
+      Serial.println(address, HEX);
+      deviceCount++;
+    }
+  }
+
+  if (deviceCount == 0) {
+    Serial.println("No I2C devices found.");
+  }
+}
+
+void startSensors() {
+  sht31Ready = sht31.begin(0x44);
+
+  if (!sht31Ready) {
+    // Some SHT31-D boards use address 0x45.
+    sht31Ready = sht31.begin(0x45);
+  }
+
+  if (sht31Ready) {
+    Serial.println("SHT31-D ready.");
+  } else {
+    Serial.println("SHT31-D not found. Check wiring/address.");
+  }
+
+  sunlightReady = sunlight.begin();
+
+  if (sunlightReady) {
+    Serial.println("Grove Sunlight / SI1145 ready.");
+  } else {
+    Serial.println("Grove Sunlight / SI1145 not found. Check wiring/address.");
+  }
+}
+
+void printSensorReadings() {
+  Serial.println();
+  Serial.println("BeeBridge sensor readings");
+
+  if (sht31Ready) {
+    float temperature = sht31.readTemperature();
+    float humidity = sht31.readHumidity();
+
+    if (!isnan(temperature) && !isnan(humidity)) {
+      Serial.print("Temperature: ");
+      Serial.print(temperature, 1);
+      Serial.println(" C");
+
+      Serial.print("Humidity: ");
+      Serial.print(humidity, 1);
+      Serial.println(" %");
+    } else {
+      Serial.println("SHT31-D read failed.");
+    }
+  }
+
+  if (sunlightReady) {
+    uint16_t visible = sunlight.readVisible();
+    uint16_t infrared = sunlight.readIR();
+    float uvIndex = sunlight.readUV() / 100.0;
+
+    Serial.print("Visible light: ");
+    Serial.println(visible);
+
+    Serial.print("Infrared light: ");
+    Serial.println(infrared);
+
+    Serial.print("UV index: ");
+    Serial.println(uvIndex, 2);
+  }
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+
+  Serial.println();
+  Serial.println("Starting BeeBridge ESP32 Sensor Node...");
+
+  Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
+  scanI2C();
+  startSensors();
+}
+
+void loop() {
+  unsigned long now = millis();
+
+  if (now - lastReadMs >= READ_INTERVAL_MS) {
+    lastReadMs = now;
+    printSensorReadings();
+  }
+}
