@@ -319,4 +319,7 @@ main {
   .score {
     font-size: 28px;
   }
+  /* Χρώμα τίτλου για το Bee */
+.bee-text {
+    color: #f5a623;
 }
