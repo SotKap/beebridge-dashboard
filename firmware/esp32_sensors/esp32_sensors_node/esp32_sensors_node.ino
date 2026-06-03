@@ -29,6 +29,11 @@ const byte SI1145_PART_ID_REG = 0x00;
 const byte SI1145_REV_ID_REG = 0x01;
 const byte SI1145_SEQ_ID_REG = 0x02;
 const byte SI1145_IRQ_STATUS_REG = 0x21;
+const byte SI1145_RESPONSE_REG = 0x20;
+const byte SI1145_CHIP_STAT_REG = 0x30;
+const byte SI1145_ALS_VIS_DATA0_REG = 0x22;
+const byte SI1145_ALS_IR_DATA0_REG = 0x24;
+const byte SI1145_UVINDEX0_REG = 0x2C;
 const byte SI1145_COMMAND_REG = 0x18;
 const byte SI1145_COMMAND_PSALS_FORCE = 0x07;
 
@@ -47,6 +52,21 @@ byte readSi1145Register(byte reg) {
 
   if (Wire.available()) {
     return Wire.read();
+  }
+
+  return 0;
+}
+
+uint16_t readSi1145HalfWord(byte reg) {
+  Wire.beginTransmission(SI1145_I2C_ADDRESS);
+  Wire.write(reg);
+  Wire.endTransmission();
+  Wire.requestFrom(SI1145_I2C_ADDRESS, (byte)2);
+
+  if (Wire.available() >= 2) {
+    uint16_t lowByte = Wire.read();
+    uint16_t highByte = Wire.read();
+    return lowByte | (highByte << 8);
   }
 
   return 0;
@@ -76,6 +96,12 @@ void printSunlightDebug() {
 
   Serial.print("SI1145 IRQ_STATUS: 0x");
   Serial.println(readSi1145Register(SI1145_IRQ_STATUS_REG), HEX);
+
+  Serial.print("SI1145 RESPONSE: 0x");
+  Serial.println(readSi1145Register(SI1145_RESPONSE_REG), HEX);
+
+  Serial.print("SI1145 CHIP_STAT: 0x");
+  Serial.println(readSi1145Register(SI1145_CHIP_STAT_REG), HEX);
 }
 
 void scanI2C() {
@@ -153,6 +179,9 @@ void printSensorReadings() {
     uint16_t visible = sunlight.ReadVisible();
     uint16_t infrared = sunlight.ReadIR();
     float uvIndex = sunlight.ReadUV() / 100.0;
+    uint16_t rawVisible = readSi1145HalfWord(SI1145_ALS_VIS_DATA0_REG);
+    uint16_t rawInfrared = readSi1145HalfWord(SI1145_ALS_IR_DATA0_REG);
+    uint16_t rawUv = readSi1145HalfWord(SI1145_UVINDEX0_REG);
 
     Serial.print("Visible light: ");
     Serial.println(visible);
@@ -162,6 +191,21 @@ void printSensorReadings() {
 
     Serial.print("UV index: ");
     Serial.println(uvIndex, 2);
+
+    Serial.print("Raw visible register: ");
+    Serial.println(rawVisible);
+
+    Serial.print("Raw infrared register: ");
+    Serial.println(rawInfrared);
+
+    Serial.print("Raw UV register: ");
+    Serial.println(rawUv);
+
+    Serial.print("Measurement IRQ_STATUS: 0x");
+    Serial.println(readSi1145Register(SI1145_IRQ_STATUS_REG), HEX);
+
+    Serial.print("Measurement RESPONSE: 0x");
+    Serial.println(readSi1145Register(SI1145_RESPONSE_REG), HEX);
 
     if (visible == 0 && infrared == 0 && uvIndex == 0.0) {
       Serial.println("Sunlight sensor returned all zeros. Try direct light and check that I2C address 0x60 appears in the scan.");
