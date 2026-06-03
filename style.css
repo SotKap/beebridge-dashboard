@@ -172,6 +172,58 @@ main {
     line-height: 1;
 }
 
+.camera-status {
+    position: absolute;
+    right: 18px;
+    top: 18px;
+    padding: 7px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.88);
+    color: var(--green-dark);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.camera-status.offline {
+    color: #9a6b00;
+}
+
+.camera-controls {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.camera-controls input,
+.camera-controls button {
+    min-height: 42px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    font: inherit;
+    font-weight: 700;
+}
+
+.camera-controls input {
+    width: 100%;
+    padding: 0 14px;
+    color: var(--text);
+    background: #fbfdfb;
+}
+
+.camera-controls button {
+    padding: 0 16px;
+    background: var(--green);
+    color: #ffffff;
+    cursor: pointer;
+}
+
+.camera-controls button:last-child {
+    background: var(--green-soft);
+    color: var(--green-dark);
+}
+
 .detection-box {
     background: linear-gradient(135deg, #e9f8ee, #f7fff8);
     border: 1px solid #cdebd4;
@@ -344,6 +396,10 @@ main {
     .visits-grid,
     .environment-grid {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    .camera-controls {
+        grid-template-columns: 1fr;
     }
 
     .logo-section h1 {

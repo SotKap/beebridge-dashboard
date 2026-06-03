@@ -47,6 +47,12 @@
         <div class="camera-frame">
             <img id="cameraFeed" src="assets/live-placeholder.jpg" class="camera-feed" alt="BeeBridge live camera preview">
             <span class="camera-time">10:42:31</span>
+            <span id="cameraStatus" class="camera-status">Demo</span>
+        </div>
+        <div class="camera-controls">
+            <input id="cameraHost" type="text" inputmode="numeric" placeholder="ESP32-CAM IP">
+            <button id="connectCamera" type="button">Connect</button>
+            <button id="resetCamera" type="button" aria-label="Use demo camera">Demo</button>
         </div>
     </section>
 
