@@ -58,6 +58,9 @@ const byte SI1145_SEQ_ID_REG = 0x02;
 const byte SI1145_IRQ_STATUS_REG = 0x21;
 const byte SI1145_RESPONSE_REG = 0x20;
 const byte SI1145_CHIP_STAT_REG = 0x30;
+const byte SI1145_ALS_VIS_DATA0_REG = 0x22;
+const byte SI1145_ALS_IR_DATA0_REG = 0x24;
+const byte SI1145_UVINDEX0_REG = 0x2C;
 const byte SI1145_COMMAND_REG = 0x18;
 const byte SI1145_COMMAND_PSALS_FORCE = 0x07;
 
@@ -152,6 +155,21 @@ byte readSi1145Register(byte reg) {
   return 0;
 }
 
+uint16_t readSi1145HalfWord(byte reg) {
+  Wire.beginTransmission(SI1145_I2C_ADDRESS);
+  Wire.write(reg);
+  Wire.endTransmission();
+  Wire.requestFrom(SI1145_I2C_ADDRESS, (byte)2);
+
+  if (Wire.available() >= 2) {
+    uint16_t lowByte = Wire.read();
+    uint16_t highByte = Wire.read();
+    return lowByte | (highByte << 8);
+  }
+
+  return 0;
+}
+
 void writeSi1145Register(byte reg, byte value) {
   Wire.beginTransmission(SI1145_I2C_ADDRESS);
   Wire.write(reg);
@@ -161,7 +179,7 @@ void writeSi1145Register(byte reg, byte value) {
 
 void forceSunlightMeasurement() {
   writeSi1145Register(SI1145_COMMAND_REG, SI1145_COMMAND_PSALS_FORCE);
-  delay(25);
+  delay(100);
 }
 
 void printSunlightDebug() {
@@ -341,9 +359,9 @@ SensorReadings readSensors() {
 
   if (sunlightReady) {
     forceSunlightMeasurement();
-    readings.visibleLight = sunlight.ReadVisible();
-    readings.infraredLight = sunlight.ReadIR();
-    readings.uvIndex = sunlight.ReadUV() / 100.0;
+    readings.visibleLight = readSi1145HalfWord(SI1145_ALS_VIS_DATA0_REG);
+    readings.infraredLight = readSi1145HalfWord(SI1145_ALS_IR_DATA0_REG);
+    readings.uvIndex = readSi1145HalfWord(SI1145_UVINDEX0_REG) / 100.0;
     readings.sunlightOk = true;
   }
 
