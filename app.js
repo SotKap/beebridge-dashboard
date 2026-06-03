@@ -4,7 +4,7 @@ import { getDatabase, onValue, ref } from "https://www.gstatic.com/firebasejs/10
 const firebaseConfig = {
     apiKey: "AIzaSyCY5z0-aa7mPZg5ViT-6G6HoVkbjXhHEhs",
     authDomain: "beebridge-fbf07.firebaseapp.com",
-    databaseURL: "https://PASTE_DATABASE_NAME.firebaseio.com",
+    databaseURL: "https://beebridge-fbf07-default-rtdb.europe-west1.firebasedatabase.app",
     projectId: "beebridge-fbf07",
     storageBucket: "beebridge-fbf07.firebasestorage.app",
     messagingSenderId: "63521687188",
