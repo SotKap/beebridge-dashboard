@@ -373,7 +373,7 @@ main {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    gap: 14px;
+    gap: 8px;
 }
 
 .power-icon {
@@ -382,6 +382,7 @@ main {
     object-fit: contain;
     flex: 0 0 auto;
     transform: rotate(90deg);
+    margin-left: -4px;
 }
 
 .bottom-nav {
