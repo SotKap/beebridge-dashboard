@@ -30,8 +30,8 @@
 
     <div class="connection-status">
         <span class="wifi-icon"></span>
-        <span>Connected</span>
-        <span class="status-dot"></span>
+        <span id="connectionLabel">Demo</span>
+        <span id="connectionDot" class="status-dot offline"></span>
     </div>
 
 </header>
@@ -77,8 +77,8 @@
         </div>
         <canvas id="confidenceChart"></canvas>
         <div class="visit-info">
-            <p>Last visit: 10:42:26</p>
-            <p>Auto count: ✓</p>
+            <p>Last visit: <span id="lastVisit">10:42:26</span></p>
+            <p>Auto count: <span id="autoCount">✓</span></p>
         </div>
     </section>
 </div>
@@ -91,27 +91,27 @@
         <div class="stat-card">
             <img src="assets/bee-icon.svg" class="stat-icon">
             <h3>Pollinators</h3>
-            <div class="big-number">12</div>
+            <div id="visitPollinators" class="big-number">12</div>
         </div>
         <div class="stat-card">
             <img src="assets/bee-icon.svg" class="stat-icon">
             <h3>Bees</h3>
-            <div class="big-number">8</div>
+            <div id="visitBees" class="big-number">8</div>
         </div>
         <div class="stat-card">
             <img src="assets/butterfly.svg" class="stat-icon">
             <h3>Butterflies</h3>
-            <div class="big-number">3</div>
+            <div id="visitButterflies" class="big-number">3</div>
         </div>
         <div class="stat-card">
             <img src="assets/insect.svg" class="stat-icon">
             <h3>Other Insects</h3>
-            <div class="big-number">1</div>
+            <div id="visitOtherInsects" class="big-number">1</div>
         </div>
         <div class="stat-card">
             <img src="assets/empty.svg" class="stat-icon">
             <h3>Empty</h3>
-            <div class="big-number">27</div>
+            <div id="visitEmpty" class="big-number">27</div>
         </div>
     </div>
 </section>
@@ -124,27 +124,27 @@
         <div class="env-card">
             <img src="assets/temp.svg">
             <h3>Temperature</h3>
-            <div class="sensor-value">25.1°C</div>
+            <div id="temperatureValue" class="sensor-value">25.1°C</div>
         </div>
         <div class="env-card">
             <img src="assets/humidity.svg">
             <h3>Humidity</h3>
-            <div class="sensor-value">48%</div>
+            <div id="humidityValue" class="sensor-value">48%</div>
         </div>
         <div class="env-card">
             <img src="assets/light.svg">
             <h3>Light</h3>
-            <div class="sensor-value">720 lux</div>
+            <div id="lightValue" class="sensor-value">720 lux</div>
         </div>
         <div class="env-card">
             <img src="assets/soil.svg">
             <h3>Soil Moisture</h3>
-            <div class="sensor-value">42%</div>
+            <div id="soilValue" class="sensor-value">42%</div>
         </div>
         <div class="env-card">
             <img src="assets/air.svg">
             <h3>Air Quality</h3>
-            <div class="sensor-value">GOOD</div>
+            <div id="airValue" class="sensor-value">GOOD</div>
         </div>
     </div>
 </section>
@@ -153,17 +153,17 @@
     <section class="card">
         <div class="section-title">POWER</div>
         <div class="power-row">
-            <div class="power-value">76%</div>
+            <div id="batteryValue" class="power-value">76%</div>
             <img src="assets/battery.svg" class="power-icon">
         </div>
     </section>
     <section class="card">
         <div class="section-title">🏅 BEEBRIDGE SCORE</div>
-        <div class="score">82 / 100</div>
+        <div id="scoreValue" class="score">82 / 100</div>
     </section>
     <section class="card">
         <div class="section-title">💡 RECOMMENDATION</div>
-        <p>Soil is getting dry. Water plants this afternoon.</p>
+        <p id="recommendationText">Soil is getting dry. Water plants this afternoon.</p>
     </section>
 </div>
 
@@ -176,6 +176,6 @@
     <div class="nav-item">Settings</div>
 </nav>
 
-<script src="app.js"></script>
+<script type="module" src="app.js"></script>
 </body>
 </html>

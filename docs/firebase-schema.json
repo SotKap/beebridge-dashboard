@@ -1,0 +1,41 @@
+{
+  "beebridge": {
+    "station": {
+      "ai": {
+        "className": "Bee",
+        "confidencePercent": 86,
+        "lastVisit": "10:42:26",
+        "autoCount": true,
+        "chart": {
+          "bee": 86,
+          "butterfly": 8,
+          "other": 6
+        }
+      },
+      "visits": {
+        "pollinators": 12,
+        "bees": 8,
+        "butterflies": 3,
+        "otherInsects": 1,
+        "empty": 27
+      },
+      "environment": {
+        "temperatureC": 25.1,
+        "humidityPercent": 48,
+        "lightLux": 720,
+        "visibleLight": 1187,
+        "infraredLight": 4372,
+        "uvIndex": 4.98,
+        "soilMoisturePercent": 42,
+        "airQuality": "GOOD"
+      },
+      "power": {
+        "batteryPercent": 76
+      },
+      "score": 82,
+      "recommendation": {
+        "text": "Soil is getting dry. Water plants this afternoon."
+      }
+    }
+  }
+}

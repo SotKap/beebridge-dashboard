@@ -104,6 +104,10 @@ body {
     display: inline-block;
 }
 
+.status-dot.offline {
+    background: #f5a623;
+}
+
 main {
     width: min(1180px, calc(100% - 32px));
     margin: 28px auto;
