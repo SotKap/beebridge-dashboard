@@ -97,17 +97,42 @@ String jsonEscape(const String& value) {
 }
 
 String extractJsonString(const String& json, const String& key) {
-  String marker = "\"" + key + "\":\"";
+  String marker = "\"" + key + "\"";
   int start = json.indexOf(marker);
 
   if (start < 0) {
     return "";
   }
 
-  start += marker.length();
-  int end = json.indexOf("\"", start);
+  start = json.indexOf(":", start + marker.length());
 
-  if (end < 0) {
+  if (start < 0) {
+    return "";
+  }
+
+  start++;
+
+  while (start < (int)json.length() && isspace(json.charAt(start))) {
+    start++;
+  }
+
+  if (start >= (int)json.length() || json.charAt(start) != '"') {
+    return "";
+  }
+
+  start++;
+
+  int end = start;
+
+  while (end < (int)json.length()) {
+    if (json.charAt(end) == '"' && json.charAt(end - 1) != '\\') {
+      break;
+    }
+
+    end++;
+  }
+
+  if (end >= (int)json.length()) {
     return "";
   }
 
