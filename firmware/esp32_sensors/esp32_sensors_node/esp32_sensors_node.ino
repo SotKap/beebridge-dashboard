@@ -24,6 +24,13 @@
 const int I2C_SDA_PIN = 21;
 const int I2C_SCL_PIN = 22;
 const unsigned long READ_INTERVAL_MS = 5000;
+const byte SI1145_I2C_ADDRESS = 0x60;
+const byte SI1145_PART_ID_REG = 0x00;
+const byte SI1145_REV_ID_REG = 0x01;
+const byte SI1145_SEQ_ID_REG = 0x02;
+const byte SI1145_IRQ_STATUS_REG = 0x21;
+const byte SI1145_COMMAND_REG = 0x18;
+const byte SI1145_COMMAND_PSALS_FORCE = 0x07;
 
 Adafruit_SHT31 sht31 = Adafruit_SHT31();
 SI114X sunlight = SI114X();
@@ -31,6 +38,45 @@ SI114X sunlight = SI114X();
 bool sht31Ready = false;
 bool sunlightReady = false;
 unsigned long lastReadMs = 0;
+
+byte readSi1145Register(byte reg) {
+  Wire.beginTransmission(SI1145_I2C_ADDRESS);
+  Wire.write(reg);
+  Wire.endTransmission();
+  Wire.requestFrom(SI1145_I2C_ADDRESS, (byte)1);
+
+  if (Wire.available()) {
+    return Wire.read();
+  }
+
+  return 0;
+}
+
+void writeSi1145Register(byte reg, byte value) {
+  Wire.beginTransmission(SI1145_I2C_ADDRESS);
+  Wire.write(reg);
+  Wire.write(value);
+  Wire.endTransmission();
+}
+
+void forceSunlightMeasurement() {
+  writeSi1145Register(SI1145_COMMAND_REG, SI1145_COMMAND_PSALS_FORCE);
+  delay(25);
+}
+
+void printSunlightDebug() {
+  Serial.print("SI1145 PART_ID: 0x");
+  Serial.println(readSi1145Register(SI1145_PART_ID_REG), HEX);
+
+  Serial.print("SI1145 REV_ID: 0x");
+  Serial.println(readSi1145Register(SI1145_REV_ID_REG), HEX);
+
+  Serial.print("SI1145 SEQ_ID: 0x");
+  Serial.println(readSi1145Register(SI1145_SEQ_ID_REG), HEX);
+
+  Serial.print("SI1145 IRQ_STATUS: 0x");
+  Serial.println(readSi1145Register(SI1145_IRQ_STATUS_REG), HEX);
+}
 
 void scanI2C() {
   Serial.println("Scanning I2C bus...");
@@ -74,6 +120,7 @@ void startSensors() {
 
   if (sunlightReady) {
     Serial.println("Grove Sunlight / SI1145 ready.");
+    printSunlightDebug();
   } else {
     Serial.println("Grove Sunlight / SI1145 not found. Check wiring/address.");
   }
@@ -101,6 +148,8 @@ void printSensorReadings() {
   }
 
   if (sunlightReady) {
+    forceSunlightMeasurement();
+
     uint16_t visible = sunlight.ReadVisible();
     uint16_t infrared = sunlight.ReadIR();
     float uvIndex = sunlight.ReadUV() / 100.0;
