@@ -37,8 +37,8 @@ const demoState = {
         temperatureC: 25.1,
         humidityPercent: 48,
         lightLux: 720,
+        uvIndex: 0.0,
         soilMoisturePercent: 42,
-        airQuality: "GOOD"
     },
     power: {
         batteryPercent: 76
@@ -64,8 +64,8 @@ const elements = {
     temperatureValue: document.getElementById("temperatureValue"),
     humidityValue: document.getElementById("humidityValue"),
     lightValue: document.getElementById("lightValue"),
+    uvValue: document.getElementById("uvValue"),
     soilValue: document.getElementById("soilValue"),
-    airValue: document.getElementById("airValue"),
     batteryValue: document.getElementById("batteryValue"),
     scoreValue: document.getElementById("scoreValue"),
     recommendationText: document.getElementById("recommendationText")
@@ -145,11 +145,11 @@ function renderDashboard(data = demoState) {
         environment.lightLux ?? environment.visibleLight,
         demoState.environment.lightLux
     );
+    const uvIndex = valueOrFallback(environment.uvIndex, demoState.environment.uvIndex);
     const soil = valueOrFallback(
         environment.soilMoisturePercent,
         demoState.environment.soilMoisturePercent
     );
-    const airQuality = valueOrFallback(environment.airQuality, demoState.environment.airQuality);
     const battery = valueOrFallback(power.batteryPercent, demoState.power.batteryPercent);
     const score = valueOrFallback(data.score, demoState.score);
 
@@ -165,8 +165,8 @@ function renderDashboard(data = demoState) {
     setText(elements.temperatureValue, `${formatNumber(temperature, 1)}°C`);
     setText(elements.humidityValue, `${formatNumber(humidity)}%`);
     setText(elements.lightValue, `${formatNumber(light)} lux`);
+    setText(elements.uvValue, formatNumber(uvIndex, 1));
     setText(elements.soilValue, `${formatNumber(soil)}%`);
-    setText(elements.airValue, airQuality);
     setText(elements.batteryValue, `${formatNumber(battery)}%`);
     setText(elements.scoreValue, `${formatNumber(score)} / 100`);
     setText(elements.recommendationText, valueOrFallback(recommendation.text, demoState.recommendation.text));

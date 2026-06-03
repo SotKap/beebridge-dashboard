@@ -400,7 +400,6 @@ String firebaseJsonForEnvironment(const SensorReadings& readings) {
   json += ",\"uvIndex\":";
   json += readings.sunlightOk ? String(readings.uvIndex, 2) : String("null");
   json += ",\"soilMoisturePercent\":42";
-  json += ",\"airQuality\":\"GOOD\"";
   json += ",\"lastUpdatedMs\":";
   json += String(millis());
   json += "}";

@@ -26,8 +26,7 @@
         "visibleLight": 1187,
         "infraredLight": 4372,
         "uvIndex": 4.98,
-        "soilMoisturePercent": 42,
-        "airQuality": "GOOD"
+        "soilMoisturePercent": 42
       },
       "power": {
         "batteryPercent": 76
