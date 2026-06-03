@@ -13,20 +13,20 @@
 
   Arduino libraries needed:
   - Adafruit SHT31 Library
-  - Adafruit SI1145 Library
+  - Grove Sunlight Sensor / SI114X Library
   - Adafruit BusIO
 */
 
 #include <Wire.h>
 #include "Adafruit_SHT31.h"
-#include "Adafruit_SI1145.h"
+#include "SI114X.h"
 
 const int I2C_SDA_PIN = 21;
 const int I2C_SCL_PIN = 22;
 const unsigned long READ_INTERVAL_MS = 5000;
 
 Adafruit_SHT31 sht31 = Adafruit_SHT31();
-Adafruit_SI1145 sunlight = Adafruit_SI1145();
+SI114X sunlight = SI114X();
 
 bool sht31Ready = false;
 bool sunlightReady = false;
@@ -70,7 +70,7 @@ void startSensors() {
     Serial.println("SHT31-D not found. Check wiring/address.");
   }
 
-  sunlightReady = sunlight.begin();
+  sunlightReady = sunlight.Begin();
 
   if (sunlightReady) {
     Serial.println("Grove Sunlight / SI1145 ready.");
@@ -101,9 +101,9 @@ void printSensorReadings() {
   }
 
   if (sunlightReady) {
-    uint16_t visible = sunlight.readVisible();
-    uint16_t infrared = sunlight.readIR();
-    float uvIndex = sunlight.readUV() / 100.0;
+    uint16_t visible = sunlight.ReadVisible();
+    uint16_t infrared = sunlight.ReadIR();
+    float uvIndex = sunlight.ReadUV() / 100.0;
 
     Serial.print("Visible light: ");
     Serial.println(visible);
@@ -113,6 +113,10 @@ void printSensorReadings() {
 
     Serial.print("UV index: ");
     Serial.println(uvIndex, 2);
+
+    if (visible == 0 && infrared == 0 && uvIndex == 0.0) {
+      Serial.println("Sunlight sensor returned all zeros. Try direct light and check that I2C address 0x60 appears in the scan.");
+    }
   }
 }
 
