@@ -72,7 +72,7 @@ body {
 /* tagline styling, separate from bee text */
 .logo-section .tagline {
     display: block;
-    color: var(--muted);
+    color: var(--green);
     font-size: 13px;
     font-weight: 500;
     margin-top: 2px;
