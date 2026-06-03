@@ -143,13 +143,33 @@ main {
     object-fit: contain;
 }
 
-.camera-feed {
+.camera-frame {
+    position: relative;
     width: 100%;
     aspect-ratio: 4 / 3;
-    object-fit: cover;
     border-radius: 20px;
     background: #dfe8df;
+    overflow: hidden;
+}
+
+.camera-feed {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     display: block;
+}
+
+.camera-time {
+    position: absolute;
+    left: 18px;
+    bottom: 18px;
+    padding: 8px 11px;
+    border-radius: 10px;
+    background: rgba(20, 25, 22, 0.78);
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1;
 }
 
 .detection-box {

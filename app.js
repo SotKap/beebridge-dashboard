@@ -28,15 +28,24 @@ new Chart(ctx, {
     }
 });
 
+function updateCameraTime() {
+    const cameraTime = document.querySelector(".camera-time");
+    if (!cameraTime) return;
 
-// προσωρινή ανανέωση εικόνας
+    cameraTime.textContent = new Date().toLocaleTimeString("en-GB");
+}
+
+updateCameraTime();
+setInterval(updateCameraTime, 1000);
+
+// Temporary local camera preview refresh.
 
 setInterval(() => {
 
     const img = document.getElementById("cameraFeed");
 
     img.src =
-        "https://placehold.co/800x600?time=" +
+        "assets/live-placeholder.jpg?time=" +
         new Date().getTime();
 
 }, 5000);
