@@ -210,12 +210,12 @@ main {
 
 .stat-icon,
 .env-card img {
-    width: 34px;
-    height: 34px;
+    width: 42px;
+    height: 42px;
     object-fit: contain;
     background: var(--green-soft);
     border-radius: 12px;
-    padding: 7px;
+    padding: 8px;
 }
 
 .stat-card h3,
@@ -253,6 +253,25 @@ main {
     font-size: 16px;
     line-height: 1.5;
     font-weight: 600;
+}
+
+.power-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.power-row .power-value {
+    font-size: 58px;
+    line-height: 1;
+}
+
+.power-icon {
+    width: 62px;
+    height: 62px;
+    object-fit: contain;
+    flex: 0 0 auto;
 }
 
 .bottom-nav {
@@ -332,5 +351,14 @@ main {
     .power-value,
     .score {
         font-size: 28px;
+    }
+
+    .power-row .power-value {
+        font-size: 48px;
+    }
+
+    .power-icon {
+        width: 54px;
+        height: 54px;
     }
 }
