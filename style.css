@@ -446,6 +446,28 @@ main {
     line-height: 1.55;
 }
 
+.translation {
+    margin-top: 12px !important;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    color: #5f6d65 !important;
+}
+
+.translation::before {
+    content: "EL";
+    display: inline-grid;
+    place-items: center;
+    width: 26px;
+    height: 20px;
+    margin-right: 8px;
+    border-radius: 999px;
+    background: var(--green-soft);
+    color: var(--green-dark);
+    font-size: 10px;
+    font-weight: 900;
+    vertical-align: 1px;
+}
+
 .learn-badge {
     width: 156px;
     min-height: 156px;
