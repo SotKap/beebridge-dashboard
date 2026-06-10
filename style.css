@@ -111,9 +111,16 @@ body {
 main {
     width: min(1180px, calc(100% - 32px));
     margin: 28px auto;
+}
+
+.page-view {
     display: flex;
     flex-direction: column;
     gap: 28px;
+}
+
+.page-view[hidden] {
+    display: none;
 }
 
 .card {
@@ -462,12 +469,16 @@ main {
 }
 
 .nav-item {
+    border: 0;
+    background: transparent;
     display: grid;
     place-items: center;
     border-radius: 18px;
     color: var(--muted);
+    font: inherit;
     font-size: 13px;
     font-weight: 800;
+    cursor: pointer;
 }
 
 .nav-item.active {

@@ -38,6 +38,7 @@
 
 <main>
 
+<div id="homeView" class="page-view active">
 <div class="top-grid">
     <section class="card live-card">
         <div class="section-title">
@@ -149,38 +150,6 @@
     </div>
 </section>
 
-<section class="card analytics-card">
-    <div class="section-title">
-        📈 LIVE CHARTS
-    </div>
-    <div class="charts-grid">
-        <div class="chart-panel">
-            <div class="chart-heading">
-                <div>
-                    <h3>Climate</h3>
-                    <span>Temperature and humidity</span>
-                </div>
-                <span id="climateUpdated" class="chart-updated">Live</span>
-            </div>
-            <div class="chart-wrap">
-                <canvas id="climateChart"></canvas>
-            </div>
-        </div>
-        <div class="chart-panel">
-            <div class="chart-heading">
-                <div>
-                    <h3>Light & Soil</h3>
-                    <span>Lux, UV and moisture</span>
-                </div>
-                <span id="lightUpdated" class="chart-updated">Live</span>
-            </div>
-            <div class="chart-wrap">
-                <canvas id="lightSoilChart"></canvas>
-            </div>
-        </div>
-    </div>
-</section>
-
 <div class="bottom-grid">
     <section class="card">
         <div class="section-title">POWER</div>
@@ -198,14 +167,49 @@
         <p id="recommendationText">Soil is getting dry. Water plants this afternoon.</p>
     </section>
 </div>
+</div>
+
+<div id="analyticsView" class="page-view" hidden>
+    <section class="card analytics-card">
+        <div class="section-title">
+            📈 ANALYTICS
+        </div>
+        <div class="charts-grid">
+            <div class="chart-panel">
+                <div class="chart-heading">
+                    <div>
+                        <h3>Climate</h3>
+                        <span>Temperature and humidity</span>
+                    </div>
+                    <span id="climateUpdated" class="chart-updated">Live</span>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="climateChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-panel">
+                <div class="chart-heading">
+                    <div>
+                        <h3>Light & Soil</h3>
+                        <span>Lux, UV and moisture</span>
+                    </div>
+                    <span id="lightUpdated" class="chart-updated">Live</span>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="lightSoilChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
 
 </main>
 
 <nav class="bottom-nav">
-    <div class="nav-item active">Home</div>
-    <div class="nav-item">History</div>
-    <div class="nav-item">Analytics</div>
-    <div class="nav-item">Settings</div>
+    <button class="nav-item active" type="button" data-view="home">Home</button>
+    <button class="nav-item" type="button" data-view="history">History</button>
+    <button class="nav-item" type="button" data-view="analytics">Analytics</button>
+    <button class="nav-item" type="button" data-view="settings">Settings</button>
 </nav>
 
 <script type="module" src="app.js"></script>

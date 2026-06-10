@@ -50,6 +50,9 @@ const demoState = {
 };
 
 const elements = {
+    homeView: document.getElementById("homeView"),
+    analyticsView: document.getElementById("analyticsView"),
+    navItems: document.querySelectorAll(".nav-item"),
     connectionLabel: document.getElementById("connectionLabel"),
     connectionDot: document.getElementById("connectionDot"),
     className: document.getElementById("className"),
@@ -315,6 +318,34 @@ function setConnectionState(label, isOnline) {
 
     if (elements.connectionDot) {
         elements.connectionDot.classList.toggle("offline", !isOnline);
+    }
+}
+
+function setActiveView(viewName) {
+    const isAnalytics = viewName === "analytics";
+
+    if (elements.homeView) {
+        elements.homeView.hidden = isAnalytics;
+        elements.homeView.classList.toggle("active", !isAnalytics);
+    }
+
+    if (elements.analyticsView) {
+        elements.analyticsView.hidden = !isAnalytics;
+        elements.analyticsView.classList.toggle("active", isAnalytics);
+    }
+
+    elements.navItems.forEach((item) => {
+        const isActive = item.dataset.view === viewName || (!isAnalytics && item.dataset.view === "home");
+        item.classList.toggle("active", isActive);
+    });
+
+    if (isAnalytics) {
+        requestAnimationFrame(() => {
+            climateChart.resize();
+            lightSoilChart.resize();
+            climateChart.update("none");
+            lightSoilChart.update("none");
+        });
     }
 }
 
@@ -668,5 +699,16 @@ if (cameraHost) {
 setInterval(() => {
     refreshCameraFrame();
 }, 3000);
+
+elements.navItems.forEach((item) => {
+    item.addEventListener("click", () => {
+        if (item.dataset.view === "analytics") {
+            setActiveView("analytics");
+            return;
+        }
+
+        setActiveView("home");
+    });
+});
 
 startFirebase();
