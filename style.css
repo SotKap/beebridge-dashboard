@@ -421,6 +421,103 @@ main {
     height: 100% !important;
 }
 
+.learn-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 24px;
+}
+
+.learn-hero h2 {
+    margin: 0 0 12px;
+    color: var(--text);
+    font-size: 34px;
+    font-weight: 900;
+    line-height: 1.08;
+}
+
+.learn-hero p,
+.learn-card p,
+.outreach-card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.55;
+}
+
+.learn-badge {
+    width: 156px;
+    min-height: 156px;
+    border-radius: 22px;
+    background: var(--green-soft);
+    border: 1px solid #cdebd4;
+    display: grid;
+    place-items: center;
+    padding: 18px;
+}
+
+.learn-badge span {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 999px;
+    background: #ffffff;
+    color: var(--green-dark);
+    text-align: center;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.learn-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.learn-card {
+    min-width: 0;
+    background: #fbfdfb;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 18px;
+}
+
+.learn-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--green-soft);
+    display: grid;
+    place-items: center;
+    font-size: 22px;
+}
+
+.learn-card h3,
+.outreach-card h3 {
+    margin: 16px 0 8px;
+    color: var(--text);
+    font-size: 16px;
+    font-weight: 900;
+}
+
+.outreach-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.outreach-grid > div {
+    min-width: 0;
+    padding: 18px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: #fbfdfb;
+}
+
+.outreach-card h3 {
+    margin-top: 0;
+}
+
 .bottom-grid {
     display: grid;
     grid-template-columns: 0.7fr 0.8fr 1.3fr;
@@ -498,6 +595,9 @@ main {
 
     .top-grid,
     .charts-grid,
+    .learn-hero,
+    .learn-grid,
+    .outreach-grid,
     .bottom-grid {
         grid-template-columns: 1fr;
     }
@@ -537,6 +637,17 @@ main {
     .power-value,
     .score {
         font-size: 28px;
+    }
+
+    .learn-hero h2 {
+        font-size: 28px;
+    }
+
+    .learn-badge {
+        width: 100%;
+        min-height: 0;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
     }
 
     .chart-wrap {

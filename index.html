@@ -203,40 +203,120 @@
     </section>
 </div>
 
+<div id="learnView" class="page-view" hidden>
+    <section class="card learn-hero">
+        <div>
+            <div class="section-title">
+                🌼 LEARN
+            </div>
+            <h2>Pollinators keep ecosystems connected.</h2>
+            <p>
+                BeeBridge turns live sensor data and AI observations into a simple way to explore how bees,
+                butterflies, and other insects support plants, food systems, and biodiversity.
+            </p>
+        </div>
+        <div class="learn-badge">
+            <span>Observe</span>
+            <span>Measure</span>
+            <span>Protect</span>
+        </div>
+    </section>
+
+    <section class="learn-grid">
+        <article class="learn-card">
+            <span class="learn-icon">🌿</span>
+            <h3>Why Pollinators Matter</h3>
+            <p>
+                Pollinators move pollen between flowers, helping many plants produce fruits, seeds,
+                and the next generation of growth.
+            </p>
+        </article>
+        <article class="learn-card">
+            <span class="learn-icon">🐝</span>
+            <h3>Meet the Visitors</h3>
+            <p>
+                Bees, butterflies, moths, flies, beetles, and other insects can all visit flowers.
+                Each one interacts with plants in a slightly different way.
+            </p>
+        </article>
+        <article class="learn-card">
+            <span class="learn-icon">📡</span>
+            <h3>What BeeBridge Tracks</h3>
+            <p>
+                Light, UV, temperature, humidity, soil moisture, camera visits, and AI recognition help
+                connect insect activity with local environmental conditions.
+            </p>
+        </article>
+        <article class="learn-card">
+            <span class="learn-icon">🏡</span>
+            <h3>Help Pollinators Thrive</h3>
+            <p>
+                Plant local flowers, avoid unnecessary pesticides, leave small wild patches, and provide
+                shallow water during dry periods.
+            </p>
+        </article>
+    </section>
+
+    <section class="card outreach-card">
+        <div class="section-title">
+            🤝 OUTREACH
+        </div>
+        <div class="outreach-grid">
+            <div>
+                <h3>For classrooms</h3>
+                <p>Use live readings to ask questions, compare days, and discuss how weather affects pollinator visits.</p>
+            </div>
+            <div>
+                <h3>For community spaces</h3>
+                <p>Show visitors that small gardens, balconies, and schoolyards can become useful pollinator habitats.</p>
+            </div>
+            <div>
+                <h3>For citizen science</h3>
+                <p>Encourage observation, simple data collection, and local action for biodiversity.</p>
+            </div>
+        </div>
+    </section>
+</div>
+
 </main>
 
 <nav class="bottom-nav">
     <button class="nav-item active" type="button" data-view="home">Home</button>
     <button class="nav-item" type="button" data-view="history">History</button>
     <button class="nav-item" type="button" data-view="analytics">Analytics</button>
-    <button class="nav-item" type="button" data-view="settings">Settings</button>
+    <button class="nav-item" type="button" data-view="learn">Learn</button>
 </nav>
 
 <script>
 (() => {
     const showView = (viewName) => {
-        const isAnalytics = viewName === "analytics";
+        const activeView = ["home", "analytics", "learn"].includes(viewName) ? viewName : "home";
         const homeView = document.getElementById("homeView");
         const analyticsView = document.getElementById("analyticsView");
+        const learnView = document.getElementById("learnView");
 
         if (homeView) {
-            homeView.hidden = isAnalytics;
-            homeView.classList.toggle("active", !isAnalytics);
+            homeView.hidden = activeView !== "home";
+            homeView.classList.toggle("active", activeView === "home");
         }
 
         if (analyticsView) {
-            analyticsView.hidden = !isAnalytics;
-            analyticsView.classList.toggle("active", isAnalytics);
+            analyticsView.hidden = activeView !== "analytics";
+            analyticsView.classList.toggle("active", activeView === "analytics");
+        }
+
+        if (learnView) {
+            learnView.hidden = activeView !== "learn";
+            learnView.classList.toggle("active", activeView === "learn");
         }
 
         document.querySelectorAll(".nav-item").forEach((item) => {
-            const isActive = item.dataset.view === viewName || (!isAnalytics && item.dataset.view === "home");
-            item.classList.toggle("active", isActive);
+            item.classList.toggle("active", item.dataset.view === activeView);
         });
 
         window.dispatchEvent(new CustomEvent("beebridge:viewchange", {
             detail: {
-                view: isAnalytics ? "analytics" : "home"
+                view: activeView
             }
         }));
     };
@@ -250,7 +330,7 @@
 
         if (!navItem) return;
 
-        showView(navItem.dataset.view === "analytics" ? "analytics" : "home");
+        showView(navItem.dataset.view);
     });
 })();
 </script>
