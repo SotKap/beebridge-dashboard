@@ -68,7 +68,9 @@ const elements = {
     soilValue: document.getElementById("soilValue"),
     batteryValue: document.getElementById("batteryValue"),
     scoreValue: document.getElementById("scoreValue"),
-    recommendationText: document.getElementById("recommendationText")
+    recommendationText: document.getElementById("recommendationText"),
+    climateUpdated: document.getElementById("climateUpdated"),
+    lightUpdated: document.getElementById("lightUpdated")
 };
 
 const ctx = document.getElementById("confidenceChart");
@@ -96,6 +98,203 @@ const confidenceChart = new Chart(ctx, {
     }
 });
 
+const chartTheme = {
+    green: "#41A85F",
+    greenDark: "#2F8C4A",
+    yellow: "#F5A623",
+    blue: "#54B7E8",
+    grey: "#90A4AE",
+    grid: "#E6ECE7",
+    text: "#7C8A82"
+};
+
+const historyLimit = 18;
+const sensorHistory = {
+    labels: [],
+    temperature: [],
+    humidity: [],
+    light: [],
+    uv: [],
+    soil: []
+};
+
+function makeGradient(chart, color) {
+    const { ctx: chartCtx, chartArea } = chart;
+
+    if (!chartArea) return color;
+
+    const gradient = chartCtx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+    gradient.addColorStop(0, color);
+    gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+    return gradient;
+}
+
+function baseLineOptions() {
+    return {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+            duration: 450
+        },
+        interaction: {
+            mode: "index",
+            intersect: false
+        },
+        plugins: {
+            legend: {
+                position: "bottom",
+                labels: {
+                    usePointStyle: true,
+                    boxWidth: 8,
+                    boxHeight: 8,
+                    color: chartTheme.text,
+                    font: {
+                        family: "Inter",
+                        weight: 700
+                    }
+                }
+            },
+            tooltip: {
+                backgroundColor: "rgba(31, 42, 36, 0.92)",
+                padding: 12,
+                titleFont: {
+                    family: "Inter",
+                    weight: 800
+                },
+                bodyFont: {
+                    family: "Inter",
+                    weight: 700
+                }
+            }
+        },
+        scales: {
+            x: {
+                grid: {
+                    display: false
+                },
+                ticks: {
+                    color: chartTheme.text,
+                    maxRotation: 0,
+                    autoSkip: true,
+                    maxTicksLimit: 6,
+                    font: {
+                        family: "Inter",
+                        weight: 700
+                    }
+                }
+            },
+            y: {
+                beginAtZero: false,
+                grid: {
+                    color: chartTheme.grid
+                },
+                ticks: {
+                    color: chartTheme.text,
+                    font: {
+                        family: "Inter",
+                        weight: 700
+                    }
+                }
+            }
+        }
+    };
+}
+
+const climateChart = new Chart(document.getElementById("climateChart"), {
+    type: "line",
+    data: {
+        labels: sensorHistory.labels,
+        datasets: [
+            {
+                label: "Temperature °C",
+                data: sensorHistory.temperature,
+                borderColor: chartTheme.yellow,
+                backgroundColor: (context) => makeGradient(context.chart, "rgba(245, 166, 35, 0.22)"),
+                borderWidth: 3,
+                pointRadius: 0,
+                pointHoverRadius: 5,
+                tension: 0.38,
+                fill: true
+            },
+            {
+                label: "Humidity %",
+                data: sensorHistory.humidity,
+                borderColor: chartTheme.blue,
+                backgroundColor: (context) => makeGradient(context.chart, "rgba(84, 183, 232, 0.16)"),
+                borderWidth: 3,
+                pointRadius: 0,
+                pointHoverRadius: 5,
+                tension: 0.38,
+                fill: true
+            }
+        ]
+    },
+    options: baseLineOptions()
+});
+
+const lightSoilOptions = baseLineOptions();
+lightSoilOptions.scales.y.beginAtZero = true;
+lightSoilOptions.scales.y1 = {
+    beginAtZero: true,
+    position: "right",
+    grid: {
+        drawOnChartArea: false
+    },
+    ticks: {
+        color: chartTheme.text,
+        font: {
+            family: "Inter",
+            weight: 700
+        }
+    }
+};
+
+const lightSoilChart = new Chart(document.getElementById("lightSoilChart"), {
+    type: "line",
+    data: {
+        labels: sensorHistory.labels,
+        datasets: [
+            {
+                label: "Light lux",
+                data: sensorHistory.light,
+                borderColor: chartTheme.yellow,
+                backgroundColor: (context) => makeGradient(context.chart, "rgba(245, 166, 35, 0.2)"),
+                borderWidth: 3,
+                pointRadius: 0,
+                pointHoverRadius: 5,
+                tension: 0.38,
+                fill: true,
+                yAxisID: "y"
+            },
+            {
+                label: "Soil %",
+                data: sensorHistory.soil,
+                borderColor: chartTheme.green,
+                backgroundColor: (context) => makeGradient(context.chart, "rgba(65, 168, 95, 0.16)"),
+                borderWidth: 3,
+                pointRadius: 0,
+                pointHoverRadius: 5,
+                tension: 0.38,
+                fill: true,
+                yAxisID: "y1"
+            },
+            {
+                label: "UV",
+                data: sensorHistory.uv,
+                borderColor: chartTheme.grey,
+                borderWidth: 2,
+                borderDash: [5, 5],
+                pointRadius: 0,
+                pointHoverRadius: 5,
+                tension: 0.38,
+                fill: false,
+                yAxisID: "y1"
+            }
+        ]
+    },
+    options: lightSoilOptions
+});
+
 function valueOrFallback(value, fallback) {
     return value === undefined || value === null || value === "" ? fallback : value;
 }
@@ -119,6 +318,10 @@ function setConnectionState(label, isOnline) {
     }
 }
 
+function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+}
+
 function updateConfidenceChart(chartData = demoState.ai.chart) {
     confidenceChart.data.datasets[0].data = [
         valueOrFallback(chartData.bee, demoState.ai.chart.bee),
@@ -126,6 +329,43 @@ function updateConfidenceChart(chartData = demoState.ai.chart) {
         valueOrFallback(chartData.other, demoState.ai.chart.other)
     ];
     confidenceChart.update();
+}
+
+function toFiniteNumber(value, fallback) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : fallback;
+}
+
+function trimSensorHistory() {
+    while (sensorHistory.labels.length > historyLimit) {
+        sensorHistory.labels.shift();
+        sensorHistory.temperature.shift();
+        sensorHistory.humidity.shift();
+        sensorHistory.light.shift();
+        sensorHistory.uv.shift();
+        sensorHistory.soil.shift();
+    }
+}
+
+function updateLiveCharts(values) {
+    const label = new Date().toLocaleTimeString("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+    });
+
+    sensorHistory.labels.push(label);
+    sensorHistory.temperature.push(toFiniteNumber(values.temperature, demoState.environment.temperatureC));
+    sensorHistory.humidity.push(toFiniteNumber(values.humidity, demoState.environment.humidityPercent));
+    sensorHistory.light.push(toFiniteNumber(values.light, demoState.environment.lightLux));
+    sensorHistory.uv.push(toFiniteNumber(values.uvIndex, demoState.environment.uvIndex));
+    sensorHistory.soil.push(toFiniteNumber(values.soil, demoState.environment.soilMoisturePercent));
+    trimSensorHistory();
+
+    climateChart.update();
+    lightSoilChart.update();
+    setText(elements.climateUpdated, label);
+    setText(elements.lightUpdated, label);
 }
 
 function renderDashboard(data = demoState) {
@@ -171,17 +411,80 @@ function renderDashboard(data = demoState) {
     setText(elements.scoreValue, `${formatNumber(score)} / 100`);
     setText(elements.recommendationText, valueOrFallback(recommendation.text, demoState.recommendation.text));
     updateConfidenceChart(ai.chart);
+    updateLiveCharts({ temperature, humidity, light, uvIndex, soil });
 }
 
 function hasFirebaseConfig() {
     return !Object.values(firebaseConfig).some((value) => value.startsWith("PASTE_"));
 }
 
-function startFirebase() {
-    renderDashboard(demoState);
+let demoStreamId = null;
 
+function createDemoSnapshot() {
+    const t = Date.now() / 1000;
+    const temperature = 25.1 + Math.sin(t / 18) * 1.3 + Math.sin(t / 7) * 0.25;
+    const humidity = 46 + Math.cos(t / 21) * 8;
+    const light = 610 + Math.sin(t / 15) * 180 + Math.cos(t / 5) * 26;
+    const uvIndex = clamp(0.4 + Math.sin(t / 24) * 0.35, 0, 1.2);
+    const soil = 42 + Math.cos(t / 32) * 4;
+    const confidence = clamp(82 + Math.sin(t / 9) * 8, 68, 96);
+    const bees = 8 + Math.max(0, Math.floor(Math.sin(t / 22) * 3));
+    const butterflies = 3 + Math.max(0, Math.floor(Math.cos(t / 34) * 2));
+    const otherInsects = 1 + Math.max(0, Math.floor(Math.sin(t / 29) * 2));
+
+    return {
+        ...demoState,
+        ai: {
+            ...demoState.ai,
+            confidencePercent: confidence,
+            lastVisit: new Date().toLocaleTimeString("en-GB"),
+            chart: {
+                bee: confidence,
+                butterfly: clamp(100 - confidence - 6, 3, 20),
+                other: 6
+            }
+        },
+        visits: {
+            pollinators: bees + butterflies + otherInsects,
+            bees,
+            butterflies,
+            otherInsects,
+            empty: 27 + Math.max(0, Math.floor(Math.cos(t / 17) * 4))
+        },
+        environment: {
+            temperatureC: temperature,
+            humidityPercent: humidity,
+            lightLux: light,
+            uvIndex,
+            soilMoisturePercent: soil
+        },
+        power: {
+            batteryPercent: 76 - Math.max(0, Math.floor((t % 240) / 80))
+        },
+        score: clamp(82 + Math.sin(t / 30) * 5, 72, 92)
+    };
+}
+
+function startDemoStream() {
+    if (demoStreamId) return;
+
+    renderDashboard(createDemoSnapshot());
+    demoStreamId = setInterval(() => {
+        renderDashboard(createDemoSnapshot());
+    }, 4000);
+}
+
+function stopDemoStream() {
+    if (!demoStreamId) return;
+
+    clearInterval(demoStreamId);
+    demoStreamId = null;
+}
+
+function startFirebase() {
     if (!hasFirebaseConfig()) {
         setConnectionState("Demo", false);
+        startDemoStream();
         return;
     }
 
@@ -194,15 +497,25 @@ function startFirebase() {
 
         onValue(stationRef, (snapshot) => {
             const data = snapshot.val();
-            renderDashboard(data || demoState);
-            setConnectionState(data ? "Firebase" : "Demo", Boolean(data));
+
+            if (data) {
+                stopDemoStream();
+                renderDashboard(data);
+                setConnectionState("Firebase", true);
+                return;
+            }
+
+            setConnectionState("Demo", false);
+            startDemoStream();
         }, (error) => {
             console.error("Firebase listener failed:", error);
             setConnectionState("Offline", false);
+            startDemoStream();
         });
     } catch (error) {
         console.error("Firebase initialization failed:", error);
         setConnectionState("Offline", false);
+        startDemoStream();
     }
 }
 

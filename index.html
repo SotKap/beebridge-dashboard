@@ -149,6 +149,38 @@
     </div>
 </section>
 
+<section class="card analytics-card">
+    <div class="section-title">
+        📈 LIVE CHARTS
+    </div>
+    <div class="charts-grid">
+        <div class="chart-panel">
+            <div class="chart-heading">
+                <div>
+                    <h3>Climate</h3>
+                    <span>Temperature and humidity</span>
+                </div>
+                <span id="climateUpdated" class="chart-updated">Live</span>
+            </div>
+            <div class="chart-wrap">
+                <canvas id="climateChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-panel">
+            <div class="chart-heading">
+                <div>
+                    <h3>Light & Soil</h3>
+                    <span>Lux, UV and moisture</span>
+                </div>
+                <span id="lightUpdated" class="chart-updated">Live</span>
+            </div>
+            <div class="chart-wrap">
+                <canvas id="lightSoilChart"></canvas>
+            </div>
+        </div>
+    </div>
+</section>
+
 <div class="bottom-grid">
     <section class="card">
         <div class="section-title">POWER</div>

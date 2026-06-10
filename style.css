@@ -359,6 +359,61 @@ main {
     margin-top: 4px;
 }
 
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.chart-panel {
+    min-width: 0;
+    background: #fbfdfb;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 18px;
+}
+
+.chart-heading {
+    min-height: 42px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.chart-heading h3 {
+    margin: 0 0 4px;
+    color: var(--text);
+    font-size: 16px;
+    font-weight: 900;
+}
+
+.chart-heading span {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.chart-updated {
+    flex: 0 0 auto;
+    padding: 7px 10px;
+    border-radius: 999px;
+    background: var(--green-soft);
+    color: var(--green-dark) !important;
+    line-height: 1;
+}
+
+.chart-wrap {
+    position: relative;
+    height: 260px;
+}
+
+.chart-wrap canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
 .bottom-grid {
     display: grid;
     grid-template-columns: 0.7fr 0.8fr 1.3fr;
@@ -431,6 +486,7 @@ main {
     }
 
     .top-grid,
+    .charts-grid,
     .bottom-grid {
         grid-template-columns: 1fr;
     }
@@ -470,6 +526,10 @@ main {
     .power-value,
     .score {
         font-size: 28px;
+    }
+
+    .chart-wrap {
+        height: 230px;
     }
 
     .power-icon {
