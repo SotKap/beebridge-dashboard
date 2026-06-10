@@ -212,6 +212,48 @@
     <button class="nav-item" type="button" data-view="settings">Settings</button>
 </nav>
 
+<script>
+(() => {
+    const showView = (viewName) => {
+        const isAnalytics = viewName === "analytics";
+        const homeView = document.getElementById("homeView");
+        const analyticsView = document.getElementById("analyticsView");
+
+        if (homeView) {
+            homeView.hidden = isAnalytics;
+            homeView.classList.toggle("active", !isAnalytics);
+        }
+
+        if (analyticsView) {
+            analyticsView.hidden = !isAnalytics;
+            analyticsView.classList.toggle("active", isAnalytics);
+        }
+
+        document.querySelectorAll(".nav-item").forEach((item) => {
+            const isActive = item.dataset.view === viewName || (!isAnalytics && item.dataset.view === "home");
+            item.classList.toggle("active", isActive);
+        });
+
+        window.dispatchEvent(new CustomEvent("beebridge:viewchange", {
+            detail: {
+                view: isAnalytics ? "analytics" : "home"
+            }
+        }));
+    };
+
+    window.BeeBridgeShowView = showView;
+
+    document.addEventListener("click", (event) => {
+        if (!(event.target instanceof Element)) return;
+
+        const navItem = event.target.closest("[data-view]");
+
+        if (!navItem) return;
+
+        showView(navItem.dataset.view === "analytics" ? "analytics" : "home");
+    });
+})();
+</script>
 <script type="module" src="app.js"></script>
 </body>
 </html>
