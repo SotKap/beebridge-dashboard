@@ -1,6 +1,6 @@
 # BeeBridge Dashboard Iteration Log
 
-This file tracks visible product iterations of the BeeBridge web app. Use the commit IDs with GitHub Desktop History to show how the app changed over time.
+This file tracks visible product iterations of the BeeBridge web app. Use the commit IDs or the matching `app-v0.x` git tags with GitHub Desktop History to show how the app changed over time.
 
 ## Current Direction
 
@@ -28,4 +28,16 @@ BeeBridge is a field monitoring dashboard for pollinator activity and local envi
 4. Select one of the commit IDs above.
 5. Use the diff to explain what changed and why.
 
-For a live demo of an older state, check out the commit locally, run the dashboard, then return to `main`.
+For a live demo of an older state, check out the matching tag locally, run the dashboard, then return to `main`.
+
+Tags created locally:
+
+- `app-v0.1`
+- `app-v0.2`
+- `app-v0.3`
+- `app-v0.4`
+- `app-v0.5`
+- `app-v0.6`
+- `app-v0.7`
+- `app-v0.8`
+- `app-v0.9`
