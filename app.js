@@ -73,13 +73,14 @@ const elements = {
     recommendationText: document.getElementById("recommendationText"),
     climateUpdated: document.getElementById("climateUpdated"),
     lightUpdated: document.getElementById("lightUpdated"),
-    analyticsPeak: document.getElementById("analyticsPeak"),
-    analyticsPeakHint: document.getElementById("analyticsPeakHint"),
-    analyticsMainVisitor: document.getElementById("analyticsMainVisitor"),
-    analyticsVisitorHint: document.getElementById("analyticsVisitorHint"),
-    analyticsScore: document.getElementById("analyticsScore"),
-    analyticsScoreHint: document.getElementById("analyticsScoreHint"),
-    analyticsBattery: document.getElementById("analyticsBattery"),
+    analyticsTempTrend: document.getElementById("analyticsTempTrend"),
+    analyticsTempTrendHint: document.getElementById("analyticsTempTrendHint"),
+    analyticsMoistureRange: document.getElementById("analyticsMoistureRange"),
+    analyticsMoistureRangeHint: document.getElementById("analyticsMoistureRangeHint"),
+    analyticsLightStability: document.getElementById("analyticsLightStability"),
+    analyticsLightStabilityHint: document.getElementById("analyticsLightStabilityHint"),
+    analyticsPollinatorMix: document.getElementById("analyticsPollinatorMix"),
+    analyticsPollinatorMixHint: document.getElementById("analyticsPollinatorMixHint"),
     analyticsInsightTitle: document.getElementById("analyticsInsightTitle"),
     analyticsInsightText: document.getElementById("analyticsInsightText"),
     analyticsClimateNote: document.getElementById("analyticsClimateNote"),
@@ -407,57 +408,119 @@ function updateLiveCharts(values) {
     setText(elements.lightUpdated, label);
 }
 
-function buildAnalyticsInsight({ temperature, humidity, light, soil }) {
-    if (soil < 35) {
+function latestTrend(values, unit = "") {
+    if (values.length < 3) {
         return {
-            title: "Soil is running dry",
-            text: "Moisture is low, so nearby plants may offer less nectar unless they are watered soon."
+            label: "Building",
+            hint: "Needs more samples"
         };
     }
 
-    if (temperature > 30) {
+    const first = values[0];
+    const last = values[values.length - 1];
+    const delta = last - first;
+    const direction = Math.abs(delta) < 0.4 ? "Stable" : delta > 0 ? "Rising" : "Falling";
+    const sign = delta > 0 ? "+" : "";
+
+    return {
+        label: direction,
+        hint: `${sign}${formatNumber(delta, 1)}${unit} across ${values.length} samples`
+    };
+}
+
+function valueRange(values, unit = "") {
+    if (values.length < 2) return "--";
+
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    return `${formatNumber(min, 1)}-${formatNumber(max, 1)}${unit}`;
+}
+
+function lightStability(values) {
+    if (values.length < 3) {
         return {
-            title: "Warm activity window",
-            text: "Temperature is high. Pollinator visits may concentrate earlier or later in the day."
+            label: "Building",
+            hint: "Needs more lux samples"
         };
     }
 
-    if (humidity < 35) {
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const spread = max - min;
+
+    if (spread < 80) {
         return {
-            title: "Dry air conditions",
-            text: "Humidity is low. Watch whether visits change as plants and insects respond to drier air."
+            label: "Steady",
+            hint: `${formatNumber(spread)} lux spread`
         };
     }
 
-    if (light > 700) {
+    if (spread < 220) {
         return {
-            title: "Bright foraging conditions",
-            text: "Light levels are strong, which can support visibility and active flower visits."
+            label: "Variable",
+            hint: `${formatNumber(spread)} lux spread`
         };
     }
 
     return {
-        title: "Balanced conditions",
-        text: "Temperature, humidity, and soil moisture are within a comfortable monitoring range."
+        label: "Shifting",
+        hint: `${formatNumber(spread)} lux spread`
     };
 }
 
-function updateAnalyticsSummary({ className, confidence, visits, temperature, humidity, light, soil, battery, score }) {
-    const pollinators = valueOrFallback(visits.pollinators, demoState.visits.pollinators);
-    const insight = buildAnalyticsInsight({ temperature, humidity, light, soil });
+function buildPatternReading({ trend, light, soil, visits }) {
+    const beeShare = visits.pollinators > 0 ? (visits.bees / visits.pollinators) * 100 : 0;
 
-    setText(elements.analyticsPeak, `${formatNumber(pollinators)} visits`);
-    setText(elements.analyticsPeakHint, "Pollinator traffic today");
-    setText(elements.analyticsMainVisitor, className);
-    setText(elements.analyticsVisitorHint, `${formatNumber(confidence)}% AI confidence`);
-    setText(elements.analyticsScore, `${formatNumber(score)} / 100`);
-    setText(elements.analyticsScoreHint, score >= 80 ? "Healthy habitat signal" : "Needs attention");
-    setText(elements.analyticsBattery, `${formatNumber(battery)}%`);
-    setText(elements.analyticsInsightTitle, insight.title);
-    setText(elements.analyticsInsightText, insight.text);
-    setText(elements.analyticsClimateNote, `${formatNumber(temperature, 1)}°C and ${formatNumber(humidity)}% humidity right now.`);
-    setText(elements.analyticsSoilNote, soil >= 40 ? `Soil moisture is stable at ${formatNumber(soil)}%.` : `Soil moisture is low at ${formatNumber(soil)}%.`);
-    setText(elements.analyticsLightNote, `${formatNumber(light)} lux measured at the station.`);
+    if (trend.label === "Rising" && light.label !== "Steady") {
+        return {
+            title: "Warming with changing light",
+            text: "The recent samples suggest a shifting microclimate. Compare this with visitor activity over the next few readings."
+        };
+    }
+
+    if (soil < 38) {
+        return {
+            title: "Moisture may become limiting",
+            text: "The analytical signal to watch is whether low soil moisture is followed by fewer or shorter pollinator visits."
+        };
+    }
+
+    if (beeShare >= 70) {
+        return {
+            title: "Bee-heavy visitor mix",
+            text: "Most detected pollinator visits are bees. This is useful for comparing future days with more butterflies or other insects."
+        };
+    }
+
+    return {
+        title: "Baseline is forming",
+        text: "BeeBridge is collecting enough recent samples to compare trends, variation, and visitor mix instead of only showing current values."
+    };
+}
+
+function updateAnalyticsSummary({ visits, temperature, humidity, light, soil }) {
+    const trend = latestTrend(sensorHistory.temperature, "°C");
+    const stability = lightStability(sensorHistory.light);
+    const humidityRange = valueRange(sensorHistory.humidity, "%");
+    const soilRange = valueRange(sensorHistory.soil, "%");
+    const pollinators = valueOrFallback(visits.pollinators, demoState.visits.pollinators);
+    const bees = valueOrFallback(visits.bees, demoState.visits.bees);
+    const beeShare = pollinators > 0 ? (bees / pollinators) * 100 : 0;
+    const pattern = buildPatternReading({ trend, light: stability, soil, visits: { ...visits, pollinators, bees } });
+
+    setText(elements.analyticsTempTrend, trend.label);
+    setText(elements.analyticsTempTrendHint, trend.hint);
+    setText(elements.analyticsMoistureRange, `${humidityRange} / ${soilRange}`);
+    setText(elements.analyticsMoistureRangeHint, "Humidity range / soil range");
+    setText(elements.analyticsLightStability, stability.label);
+    setText(elements.analyticsLightStabilityHint, stability.hint);
+    setText(elements.analyticsPollinatorMix, `${formatNumber(beeShare)}% bees`);
+    setText(elements.analyticsPollinatorMixHint, `${formatNumber(bees)} of ${formatNumber(pollinators)} pollinator visits`);
+    setText(elements.analyticsInsightTitle, pattern.title);
+    setText(elements.analyticsInsightText, pattern.text);
+    setText(elements.analyticsClimateNote, `Question: do visits increase when temperature is ${trend.label.toLowerCase()}?`);
+    setText(elements.analyticsSoilNote, `Compare plant stress with soil range ${soilRange}; low ranges may explain quieter visits.`);
+    setText(elements.analyticsLightNote, `Light is ${stability.label.toLowerCase()}; use this to separate sunny bursts from steady conditions.`);
 }
 
 function renderDashboard(data = demoState) {
@@ -504,7 +567,7 @@ function renderDashboard(data = demoState) {
     setText(elements.recommendationText, valueOrFallback(recommendation.text, demoState.recommendation.text));
     updateConfidenceChart(ai.chart);
     updateLiveCharts({ temperature, humidity, light, uvIndex, soil });
-    updateAnalyticsSummary({ className, confidence, visits, temperature, humidity, light, soil, battery, score });
+    updateAnalyticsSummary({ visits, temperature, humidity, light, soil });
 }
 
 function hasFirebaseConfig() {
