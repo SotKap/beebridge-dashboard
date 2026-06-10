@@ -72,7 +72,19 @@ const elements = {
     scoreValue: document.getElementById("scoreValue"),
     recommendationText: document.getElementById("recommendationText"),
     climateUpdated: document.getElementById("climateUpdated"),
-    lightUpdated: document.getElementById("lightUpdated")
+    lightUpdated: document.getElementById("lightUpdated"),
+    analyticsPeak: document.getElementById("analyticsPeak"),
+    analyticsPeakHint: document.getElementById("analyticsPeakHint"),
+    analyticsMainVisitor: document.getElementById("analyticsMainVisitor"),
+    analyticsVisitorHint: document.getElementById("analyticsVisitorHint"),
+    analyticsScore: document.getElementById("analyticsScore"),
+    analyticsScoreHint: document.getElementById("analyticsScoreHint"),
+    analyticsBattery: document.getElementById("analyticsBattery"),
+    analyticsInsightTitle: document.getElementById("analyticsInsightTitle"),
+    analyticsInsightText: document.getElementById("analyticsInsightText"),
+    analyticsClimateNote: document.getElementById("analyticsClimateNote"),
+    analyticsSoilNote: document.getElementById("analyticsSoilNote"),
+    analyticsLightNote: document.getElementById("analyticsLightNote")
 };
 
 const ctx = document.getElementById("confidenceChart");
@@ -395,6 +407,59 @@ function updateLiveCharts(values) {
     setText(elements.lightUpdated, label);
 }
 
+function buildAnalyticsInsight({ temperature, humidity, light, soil }) {
+    if (soil < 35) {
+        return {
+            title: "Soil is running dry",
+            text: "Moisture is low, so nearby plants may offer less nectar unless they are watered soon."
+        };
+    }
+
+    if (temperature > 30) {
+        return {
+            title: "Warm activity window",
+            text: "Temperature is high. Pollinator visits may concentrate earlier or later in the day."
+        };
+    }
+
+    if (humidity < 35) {
+        return {
+            title: "Dry air conditions",
+            text: "Humidity is low. Watch whether visits change as plants and insects respond to drier air."
+        };
+    }
+
+    if (light > 700) {
+        return {
+            title: "Bright foraging conditions",
+            text: "Light levels are strong, which can support visibility and active flower visits."
+        };
+    }
+
+    return {
+        title: "Balanced conditions",
+        text: "Temperature, humidity, and soil moisture are within a comfortable monitoring range."
+    };
+}
+
+function updateAnalyticsSummary({ className, confidence, visits, temperature, humidity, light, soil, battery, score }) {
+    const pollinators = valueOrFallback(visits.pollinators, demoState.visits.pollinators);
+    const insight = buildAnalyticsInsight({ temperature, humidity, light, soil });
+
+    setText(elements.analyticsPeak, `${formatNumber(pollinators)} visits`);
+    setText(elements.analyticsPeakHint, "Pollinator traffic today");
+    setText(elements.analyticsMainVisitor, className);
+    setText(elements.analyticsVisitorHint, `${formatNumber(confidence)}% AI confidence`);
+    setText(elements.analyticsScore, `${formatNumber(score)} / 100`);
+    setText(elements.analyticsScoreHint, score >= 80 ? "Healthy habitat signal" : "Needs attention");
+    setText(elements.analyticsBattery, `${formatNumber(battery)}%`);
+    setText(elements.analyticsInsightTitle, insight.title);
+    setText(elements.analyticsInsightText, insight.text);
+    setText(elements.analyticsClimateNote, `${formatNumber(temperature, 1)}°C and ${formatNumber(humidity)}% humidity right now.`);
+    setText(elements.analyticsSoilNote, soil >= 40 ? `Soil moisture is stable at ${formatNumber(soil)}%.` : `Soil moisture is low at ${formatNumber(soil)}%.`);
+    setText(elements.analyticsLightNote, `${formatNumber(light)} lux measured at the station.`);
+}
+
 function renderDashboard(data = demoState) {
     const ai = data.ai || demoState.ai;
     const visits = data.visits || demoState.visits;
@@ -439,6 +504,7 @@ function renderDashboard(data = demoState) {
     setText(elements.recommendationText, valueOrFallback(recommendation.text, demoState.recommendation.text));
     updateConfidenceChart(ai.chart);
     updateLiveCharts({ temperature, humidity, light, uvIndex, soil });
+    updateAnalyticsSummary({ className, confidence, visits, temperature, humidity, light, soil, battery, score });
 }
 
 function hasFirebaseConfig() {

@@ -170,6 +170,29 @@
 </div>
 
 <div id="analyticsView" class="page-view" hidden>
+    <section class="analytics-summary">
+        <div class="analytics-stat">
+            <span class="analytics-label">Peak Activity</span>
+            <strong id="analyticsPeak">12 visits</strong>
+            <small id="analyticsPeakHint">Pollinator traffic today</small>
+        </div>
+        <div class="analytics-stat">
+            <span class="analytics-label">Main Visitor</span>
+            <strong id="analyticsMainVisitor">Bee</strong>
+            <small id="analyticsVisitorHint">Based on AI confidence</small>
+        </div>
+        <div class="analytics-stat">
+            <span class="analytics-label">Habitat Score</span>
+            <strong id="analyticsScore">82 / 100</strong>
+            <small id="analyticsScoreHint">Current BeeBridge rating</small>
+        </div>
+        <div class="analytics-stat">
+            <span class="analytics-label">Power</span>
+            <strong id="analyticsBattery">76%</strong>
+            <small>Station battery</small>
+        </div>
+    </section>
+
     <section class="card analytics-card">
         <div class="section-title">
             📈 ANALYTICS
@@ -198,6 +221,26 @@
                 <div class="chart-wrap">
                     <canvas id="lightSoilChart"></canvas>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="analytics-detail-grid">
+        <div class="card analytics-insight">
+            <div class="section-title">
+                🔎 LIVE INSIGHT
+            </div>
+            <h3 id="analyticsInsightTitle">Balanced conditions</h3>
+            <p id="analyticsInsightText">Temperature, humidity, and soil moisture are within a comfortable monitoring range.</p>
+        </div>
+        <div class="card analytics-insight">
+            <div class="section-title">
+                🌱 HABITAT NOTES
+            </div>
+            <div class="analytics-note-list">
+                <span id="analyticsClimateNote">Climate data is building.</span>
+                <span id="analyticsSoilNote">Soil moisture is being tracked.</span>
+                <span id="analyticsLightNote">Light levels are being tracked.</span>
             </div>
         </div>
     </section>
