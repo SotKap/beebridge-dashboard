@@ -489,6 +489,167 @@ main {
     line-height: 1.45;
 }
 
+.journal-layout {
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: 18px;
+}
+
+.journal-form,
+.journal-panel {
+    min-width: 0;
+    background: #fbfdfb;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 18px;
+}
+
+.journal-form {
+    display: grid;
+    gap: 14px;
+}
+
+.journal-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.journal-form label {
+    display: grid;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.journal-form select,
+.journal-form textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: #ffffff;
+    color: var(--text);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.journal-form select {
+    min-height: 42px;
+    padding: 0 12px;
+}
+
+.journal-form textarea {
+    resize: vertical;
+    min-height: 128px;
+    padding: 12px;
+}
+
+.journal-snapshot {
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: var(--green-soft);
+    color: var(--green-dark);
+    font-size: 12px;
+    line-height: 1.45;
+    font-weight: 800;
+}
+
+.journal-form button,
+.journal-panel-header button {
+    min-height: 42px;
+    border: 0;
+    border-radius: 14px;
+    background: var(--green);
+    color: #ffffff;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.journal-panel-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.journal-panel-header h3 {
+    margin: 0 0 4px;
+    color: var(--text);
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.journal-panel-header span {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.journal-panel-header button {
+    min-height: 34px;
+    padding: 0 12px;
+    background: var(--green-soft);
+    color: var(--green-dark);
+}
+
+.journal-entries {
+    display: grid;
+    gap: 12px;
+    max-height: 520px;
+    overflow: auto;
+    padding-right: 4px;
+}
+
+.journal-entry,
+.journal-empty {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: #ffffff;
+    padding: 14px;
+}
+
+.journal-entry header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.journal-entry strong {
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.journal-entry time,
+.journal-entry small,
+.journal-empty {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.journal-entry p {
+    margin: 0 0 10px;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.45;
+    font-weight: 600;
+}
+
+.journal-entry .entry-snapshot {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.45;
+    font-weight: 700;
+}
+
 .learn-hero {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
@@ -687,6 +848,7 @@ main {
     .analytics-summary,
     .charts-grid,
     .analytics-detail-grid,
+    .journal-layout,
     .learn-hero,
     .learn-grid,
     .outreach-grid,
@@ -700,6 +862,10 @@ main {
     }
 
     .camera-controls {
+        grid-template-columns: 1fr;
+    }
+
+    .journal-fields {
         grid-template-columns: 1fr;
     }
 

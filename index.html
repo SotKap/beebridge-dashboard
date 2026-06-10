@@ -246,6 +246,62 @@
     </section>
 </div>
 
+<div id="journalView" class="page-view" hidden>
+    <section class="card journal-card">
+        <div class="section-title">
+            📝 FIELD JOURNAL
+        </div>
+        <div class="journal-layout">
+            <form id="journalForm" class="journal-form">
+                <div class="journal-fields">
+                    <label>
+                        Observation
+                        <select id="journalObservation">
+                            <option value="Pollinator visit">Pollinator visit</option>
+                            <option value="Low activity">Low activity</option>
+                            <option value="Flowering change">Flowering change</option>
+                            <option value="Weather change">Weather change</option>
+                            <option value="Maintenance">Maintenance</option>
+                        </select>
+                    </label>
+                    <label>
+                        Conditions
+                        <select id="journalConditions">
+                            <option value="Sunny">Sunny</option>
+                            <option value="Partly cloudy">Partly cloudy</option>
+                            <option value="Cloudy">Cloudy</option>
+                            <option value="Windy">Windy</option>
+                            <option value="After watering">After watering</option>
+                            <option value="After rain">After rain</option>
+                        </select>
+                    </label>
+                </div>
+                <label>
+                    Notes
+                    <textarea id="journalNotes" rows="5" placeholder="What did you observe around the station?"></textarea>
+                </label>
+                <div class="journal-snapshot">
+                    <span id="journalSnapshot">Snapshot will attach the latest station readings.</span>
+                </div>
+                <button type="submit">Save Entry</button>
+            </form>
+
+            <div class="journal-panel">
+                <div class="journal-panel-header">
+                    <div>
+                        <h3>Recent Entries</h3>
+                        <span id="journalCount">0 saved observations</span>
+                    </div>
+                    <button id="clearJournal" type="button">Clear</button>
+                </div>
+                <div id="journalEntries" class="journal-entries">
+                    <div class="journal-empty">No field notes yet.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
 <div id="learnView" class="page-view" hidden>
     <section class="card learn-hero">
         <div>
@@ -349,7 +405,7 @@
 
 <nav class="bottom-nav">
     <button class="nav-item active" type="button" data-view="home">Home</button>
-    <button class="nav-item" type="button" data-view="history">History</button>
+    <button class="nav-item" type="button" data-view="journal">Journal</button>
     <button class="nav-item" type="button" data-view="analytics">Analytics</button>
     <button class="nav-item" type="button" data-view="learn">Learn</button>
 </nav>
@@ -357,14 +413,20 @@
 <script>
 (() => {
     const showView = (viewName) => {
-        const activeView = ["home", "analytics", "learn"].includes(viewName) ? viewName : "home";
+        const activeView = ["home", "journal", "analytics", "learn"].includes(viewName) ? viewName : "home";
         const homeView = document.getElementById("homeView");
+        const journalView = document.getElementById("journalView");
         const analyticsView = document.getElementById("analyticsView");
         const learnView = document.getElementById("learnView");
 
         if (homeView) {
             homeView.hidden = activeView !== "home";
             homeView.classList.toggle("active", activeView === "home");
+        }
+
+        if (journalView) {
+            journalView.hidden = activeView !== "journal";
+            journalView.classList.toggle("active", activeView === "journal");
         }
 
         if (analyticsView) {

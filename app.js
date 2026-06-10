@@ -51,6 +51,7 @@ const demoState = {
 
 const elements = {
     homeView: document.getElementById("homeView"),
+    journalView: document.getElementById("journalView"),
     analyticsView: document.getElementById("analyticsView"),
     connectionLabel: document.getElementById("connectionLabel"),
     connectionDot: document.getElementById("connectionDot"),
@@ -85,7 +86,15 @@ const elements = {
     analyticsInsightText: document.getElementById("analyticsInsightText"),
     analyticsClimateNote: document.getElementById("analyticsClimateNote"),
     analyticsSoilNote: document.getElementById("analyticsSoilNote"),
-    analyticsLightNote: document.getElementById("analyticsLightNote")
+    analyticsLightNote: document.getElementById("analyticsLightNote"),
+    journalForm: document.getElementById("journalForm"),
+    journalObservation: document.getElementById("journalObservation"),
+    journalConditions: document.getElementById("journalConditions"),
+    journalNotes: document.getElementById("journalNotes"),
+    journalSnapshot: document.getElementById("journalSnapshot"),
+    journalEntries: document.getElementById("journalEntries"),
+    journalCount: document.getElementById("journalCount"),
+    clearJournal: document.getElementById("clearJournal")
 };
 
 const ctx = document.getElementById("confidenceChart");
@@ -131,6 +140,17 @@ const sensorHistory = {
     light: [],
     uv: [],
     soil: []
+};
+
+const JOURNAL_STORAGE_KEY = "beebridgeFieldJournal";
+let latestStationSnapshot = {
+    temperature: demoState.environment.temperatureC,
+    humidity: demoState.environment.humidityPercent,
+    light: demoState.environment.lightLux,
+    uvIndex: demoState.environment.uvIndex,
+    soil: demoState.environment.soilMoisturePercent,
+    visitor: demoState.ai.className,
+    confidence: demoState.ai.confidencePercent
 };
 
 function makeGradient(chart, color) {
@@ -325,6 +345,62 @@ function setText(element, value) {
     }
 }
 
+function formatSnapshot(snapshot = latestStationSnapshot) {
+    return `${formatNumber(snapshot.temperature, 1)}°C, ${formatNumber(snapshot.humidity)}% humidity, ${formatNumber(snapshot.soil)}% soil, ${formatNumber(snapshot.light)} lux, ${snapshot.visitor} ${formatNumber(snapshot.confidence)}%`;
+}
+
+function loadJournalEntries() {
+    try {
+        const entries = JSON.parse(localStorage.getItem(JOURNAL_STORAGE_KEY) || "[]");
+        return Array.isArray(entries) ? entries : [];
+    } catch (error) {
+        console.warn("Could not read journal entries:", error);
+        return [];
+    }
+}
+
+function saveJournalEntries(entries) {
+    localStorage.setItem(JOURNAL_STORAGE_KEY, JSON.stringify(entries.slice(0, 30)));
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function renderJournalEntries() {
+    const entries = loadJournalEntries();
+
+    setText(elements.journalCount, `${entries.length} saved observation${entries.length === 1 ? "" : "s"}`);
+
+    if (!elements.journalEntries) return;
+
+    if (entries.length === 0) {
+        elements.journalEntries.innerHTML = '<div class="journal-empty">No field notes yet.</div>';
+        return;
+    }
+
+    elements.journalEntries.innerHTML = entries.map((entry) => `
+        <article class="journal-entry">
+            <header>
+                <strong>${escapeHtml(entry.observation)}</strong>
+                <time>${escapeHtml(entry.createdAt)}</time>
+            </header>
+            <small>${escapeHtml(entry.conditions)}</small>
+            <p>${escapeHtml(entry.notes || "No extra notes.")}</p>
+            <span class="entry-snapshot">${escapeHtml(entry.snapshotText)}</span>
+        </article>
+    `).join("");
+}
+
+function updateJournalSnapshot() {
+    setText(elements.journalSnapshot, `Attached snapshot: ${formatSnapshot()}`);
+}
+
 function setConnectionState(label, isOnline) {
     setText(elements.connectionLabel, label);
 
@@ -355,6 +431,11 @@ function handleViewChange(event) {
         requestAnimationFrame(() => {
             resizeAnalyticsCharts();
         });
+    }
+
+    if (event.detail?.view === "journal") {
+        renderJournalEntries();
+        updateJournalSnapshot();
     }
 }
 
@@ -568,6 +649,16 @@ function renderDashboard(data = demoState) {
     updateConfidenceChart(ai.chart);
     updateLiveCharts({ temperature, humidity, light, uvIndex, soil });
     updateAnalyticsSummary({ visits, temperature, humidity, light, soil });
+    latestStationSnapshot = {
+        temperature,
+        humidity,
+        light,
+        uvIndex,
+        soil,
+        visitor: className,
+        confidence
+    };
+    updateJournalSnapshot();
 }
 
 function hasFirebaseConfig() {
@@ -825,6 +916,43 @@ setInterval(() => {
     refreshCameraFrame();
 }, 3000);
 
+if (elements.journalForm) {
+    elements.journalForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        const entries = loadJournalEntries();
+        const entry = {
+            id: Date.now(),
+            createdAt: new Date().toLocaleString("en-GB", {
+                dateStyle: "medium",
+                timeStyle: "short"
+            }),
+            observation: elements.journalObservation?.value || "Observation",
+            conditions: elements.journalConditions?.value || "Conditions not set",
+            notes: elements.journalNotes?.value.trim() || "",
+            snapshot: latestStationSnapshot,
+            snapshotText: formatSnapshot()
+        };
+
+        saveJournalEntries([entry, ...entries]);
+
+        if (elements.journalNotes) {
+            elements.journalNotes.value = "";
+        }
+
+        renderJournalEntries();
+    });
+}
+
+if (elements.clearJournal) {
+    elements.clearJournal.addEventListener("click", () => {
+        localStorage.removeItem(JOURNAL_STORAGE_KEY);
+        renderJournalEntries();
+    });
+}
+
 window.addEventListener("beebridge:viewchange", handleViewChange);
 
+renderJournalEntries();
+updateJournalSnapshot();
 startFirebase();
