@@ -18,7 +18,7 @@ BeeBridge is a field monitoring dashboard for pollinator activity and local envi
 | v0.6 | `bab0847` | Added Greek content to Learn. | The outreach material became useful for Greek-speaking students and visitors. |
 | v0.7 | `6b8aeaa` | Expanded Analytics with summary panels. | The first attempt made Analytics fuller, but it repeated too much from Home. |
 | v0.8 | `d108014` | Changed Analytics to trends and patterns. | Analytics became more useful by interpreting recent samples instead of repeating live values. |
-| v0.9 | `877a64d` | Added Field Journal. | The app now supports real field observations alongside sensor data. |
+| v0.9 | `8247ec4` | Added Field Journal. | The app now supports real field observations alongside sensor data. |
 
 ## How To Show Previous Versions
 
